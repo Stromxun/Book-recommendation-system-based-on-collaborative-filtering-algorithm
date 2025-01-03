@@ -8,7 +8,7 @@ Django:``` pip install django ```
 
 Numpy、 Pandas: ``` pip install numpy pandas ```
 
-scikit-learn: ``` pip install scikit - learn ```
+scikit-learn: ``` pip install scikit-learn ```
 
 MYSQL 8.0.40:https://dev.mysql.com/downloads/file/?id=536356
 
