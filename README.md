@@ -13,6 +13,8 @@ scikit-learn: ``` pip install scikit-learn ```
 MYSQL 8.0.40:https://dev.mysql.com/downloads/file/?id=536356
 
 Pymsql: ``` pip install pymysql ```
+
+mysqlclient ``` pip install mysqlclient ```
 ### 前端
 HTML、CSS、JS
 
