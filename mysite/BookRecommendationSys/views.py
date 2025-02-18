@@ -3,13 +3,14 @@ import datetime
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import loader, render, redirect
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from . import models
 # Create your views here.
 
-def index(request, userid):
-    return render(request, 'index.html')
+def index(request):
+    return render(request, 'index.html',)
 
 def login(request):
     if request.method != 'POST':
@@ -17,30 +18,34 @@ def login(request):
     userID = request.POST['userID']
     password = request.POST['password']
     if password == models.User.objects.all().get(userID=userID).pwd:
+        request.session.set_expiry(1209600) # 两周
+        request.session['userID'] = userID
         return user_home(request, userID)
     return render(request, "login.html")
 
 def generate_group(user_id): # 生成初始group
     group = models.Group(groupName='我的好友', friends='[]')
-    models.GroupList.objects.create(userID_id=user_id, groupList='[{0}]'.format(group.groupID))
     group.save()
+    models.GroupList.objects.create(userID_id=user_id, groupList='[{0}]'.format(group.groupID))
+
+def login_out(request):
+    request.session.clear()
+    return render(request, 'index.html')
 
 def register(request):
     if request.method == "POST":
+        # 生成用户个人信息
         username = request.POST['username']
-        if not models.User.objects.filter(name=username).exists():
-            # 生成用户个人信息
-            email = request.POST['email']
-            password = request.POST['password']
-            sign="你好，我是{0}，欢迎来到我的阅读空间".format(username) # 默认值
-            sex="男" # 默认值
-            path= "img/user_head/default.jpg"
-            user = models.User(name=username, email=email, pwd=password, birthday=datetime.date(1975, 1, 1), sign=sign, sex=sex, avatar_path=path)
-            user.save()
-
-            # 生成好友群组
-            generate_group(user.userID)
-            return render(request, "index.html")
+        email = request.POST['email']
+        password = request.POST['password']
+        sign="你好，我是{0}，欢迎来到我的阅读空间".format(username) # 默认值
+        sex="男" # 默认值
+        path= "img/user_head/default.jpg"
+        user = models.User(name=username, email=email, pwd=password, birthday=datetime.date(1975, 1, 1), sign=sign, sex=sex, avatar_path=path)
+        user.save()
+        # 生成好友群组
+        generate_group(user.userID)
+        return render(request, "index.html")
     return render(request, "register.html")
 
 # 用户空间

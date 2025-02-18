@@ -5,102 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>首页</title>
     <style>
+        /* 全局样式 */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
+            background-color: #f0f2f5;
+            color: #333;
         }
-        .page-title {
-            position: fixed; /* 固定位置 */
-            top: 20px;      /* 距离顶部20px */
-            left: 20px;     /* 距离左侧20px */
-            font-size: 24px;
-            font-weight: bold;
-            color: white;
-            margin: 0;      /* 去除默认的外边距 */
-        }
+
+        /* 导航栏 */
         .navbar {
             background-color: #007bff;
-            overflow: hidden;
-            position: fixed;
-            top: 0;
-            width: 100%;
+            color: #fff;
+            padding: 10px 20px;
             display: flex;
-            justify-content: flex-end;
-            padding: 10px 20px;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .navbar a {
-            color: white;
-            text-align: center;
-            padding: 14px 20px;
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .navbar .nav-links a {
+            color: #fff;
             text-decoration: none;
-            font-size: 17px;
-        }
-        .navbar a:hover {
-            background-color: #575757;
-            border-radius: 4px;
-        }
-        .container {
-            text-align: center;
-            background-color: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .container h1 {
-            margin-bottom: 20px;
-            font-size: 2.5em;
-        }
-        .container p {
-            font-size: 1.2em;
-            color: #555;
-            margin-bottom: 30px;
-        }
-        .btn {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
+            margin-left: 20px;
             font-size: 16px;
-            cursor: pointer;
+        }
+        .navbar .nav-links a:hover {
             text-decoration: none;
-            display: inline-block;
-            margin: 5px;
         }
-        .btn:hover {
-            background-color: #218838;
-        }
-        .btn-secondary {
+        /* 页脚 */
+        .footer {
             background-color: #007bff;
-        }
-        .btn-secondary:hover {
-            background-color: #0056b3;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
         }
     </style>
 </head>
 <body>
     <!-- 导航栏 -->
-    <div class="navbar">
-        <a href="{% url 'login'  %}">登录</a>
-        <a href="{% url 'register'  %}">注册</a>
+<div class="navbar">
+    <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <div class="nav-links">
+        {% if request.session.userID %}
+            <a href="#">Book</a>
+            <a href="{% url 'home' request.session.userID %}">我的空间</a>
+            <a href="#">私信</a>
+            <a href="{% url 'login_out' %}">退出登录</a>
+        {% else %}
+            <a href="{% url 'login' %}">登录</a>
+            <a href="{% url 'register' %}">注册</a>
+        {% endif %}
     </div>
-    <!-- 左上角标识 -->
-    <div class="page-title">
-        <a>图书推荐系统</a>
-    </div>
+</div>
     <!-- 主页内容 -->
-    <div class="container">
-        <h1>欢迎使用本图书推荐系统</h1>
-        <p>本系统基于协同过滤算法，旨帮助书友摆脱书荒和高效率地搜集感兴趣的书籍！</p>
-        <a href="{% url 'register'  %}" class="btn">注册</a>
-        <a href="{% url 'login'  %}" class="btn btn-secondary">登录</a>
-    </div>
+
+<!-- 页脚 -->
+<div class="footer">
+    欢迎您使用本系统，祝您拥有一个美好的阅读体验！
+</div>
 </body>
 </html>

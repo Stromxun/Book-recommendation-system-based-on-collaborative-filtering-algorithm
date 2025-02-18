@@ -4,7 +4,8 @@ from . import views
 
 urlpatterns = [
     # 主页
-    path("index/", views.index, {'userid': ''}, name="index"),
+    path("index/", views.index, name="index"),
+    path("login_out/", views.login_out, name="login_out"),
 
     # 用户空间
     path("<int:userid>/home/", views.user_home, name="home"),

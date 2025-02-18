@@ -5,49 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注册</title>
     <style>
+        /* 全局样式 */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
-        }
-        .page-title {
-            position: fixed; /* 固定位置 */
-            top: 20px;      /* 距离顶部20px */
-            left: 20px;     /* 距离左侧20px */
-            font-size: 24px;
-            font-weight: bold;
-            color: white;
-            margin: 0;      /* 去除默认的外边距 */
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
         }
 
+        /* 导航栏 */
         .navbar {
             background-color: #007bff;
-            overflow: hidden;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            display: flex;
-            justify-content: flex-end;
+            color: #fff;
             padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .navbar a {
-            color: white;
-            text-align: center;
-            padding: 14px 20px;
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .navbar .nav-links a {
+            color: #fff;
             text-decoration: none;
-            font-size: 17px;
+            margin-left: 20px;
+            font-size: 16px;
         }
-        .navbar a:hover {
-            background-color: #575757;
-            border-radius: 4px;
+        .navbar .nav-links a:hover {
+            text-decoration: none;
+        }
+        /* 页脚 */
+        .footer {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
         }
         .register-container {
             background-color: #fff;
             padding: 20px;
+            position: absolute;
+            top: 170px;
+            bottom: 200px;
+            left: 0;
+            right: 0;
+            margin: auto;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 300px;
@@ -120,13 +128,11 @@
 </head>
 <body>
 
-    <!-- 导航栏 -->
     <div class="navbar">
-        <a href="{% url 'index'  %}">返回首页</a>
-    </div>
-    <!-- 左上角标识 -->
-    <div class="page-title">
-        <a>图书推荐系统</a>
+        <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+        <div class="nav-links">
+            <a href="{% url 'index' %}">返回首页</a>
+        </div>
     </div>
     <div class="register-container">
         <h2>注册</h2>
@@ -151,5 +157,8 @@
             已经拥有账户? <a href="{% url "login" %}">登录</a>
         </div>
     </div>
+<div class="footer">
+    欢迎您使用本系统，祝您拥有一个美好的阅读体验！
+</div>
 </body>
 </html>
