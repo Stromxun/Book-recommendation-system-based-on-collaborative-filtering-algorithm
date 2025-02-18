@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .page-title {
+            position: fixed; /* 固定位置 */
+            top: 20px;      /* 距离顶部20px */
+            left: 20px;     /* 距离左侧20px */
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin: 0;      /* 去除默认的外边距 */
+        }
+
+        .navbar {
+            background-color: #007bff;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            padding: 10px 20px;
+        }
+        .navbar a {
+            color: white;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none;
+            font-size: 17px;
+        }
+        .navbar a:hover {
+            background-color: #575757;
+            border-radius: 4px;
+        }
+
+        .login-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .login-container input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .login-container input[type="submit"]:hover {
+            background-color: #218838;
+        }
+        .login-container .register-link {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .login-container .register-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .login-container .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <div class="navbar">
+        <a href="{% url 'index'  %}">返回首页</a>
+    </div>
+    <!-- 左上角标识 -->
+    <div class="page-title">
+        <a>图书推荐系统</a>
+    </div>
+    <div class="login-container">
+        <h2>登录</h2>
+        <form action="{% url 'login' %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="userID" placeholder="账号" required>
+            <input type="password" name="password" placeholder="密码" required>
+            <input type="submit" value="登录">
+        </form>
+        <div class="register-link">
+            <p>还没有账号？<a href="{% url 'register' %}">注册</a></p>
+        </div>
+    </div>
+</body>
+</html>

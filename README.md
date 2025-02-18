@@ -14,7 +14,7 @@ MYSQL 8.0.40:https://dev.mysql.com/downloads/file/?id=536356
 
 Pymsql: ``` pip install pymysql ```
 ### 前端
-Vue.js:https://cn.vuejs.org/
+HTML、CSS、JS
 
 ### IDE
 Pycharm:https://www.jetbrains.com/pycharm/download/download-thanks.html?platform=windows&code=PCC
