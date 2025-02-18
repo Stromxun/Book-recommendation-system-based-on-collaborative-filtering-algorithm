@@ -9,7 +9,7 @@ class Book(models.Model): # 图书模型
     BookTitle = models.CharField(max_length=255)
     BookAuthor = models.CharField(max_length=255)
     keyword = models.CharField(max_length=255) # PS:关键字通过逗号隔开
-    description = models.TextField()
+    description = models.TextField(default="该书暂无详情")
     YearOfPublication = models.IntegerField()
     Publisher = models.CharField(max_length=120)
     imageURL = models.URLField() # 图书图片的URL
@@ -28,6 +28,7 @@ class User(models.Model): # 用户模型
     birthday = models.DateField(blank=True) # 生日
     signupDate = models.DateField(auto_now_add=True) # 注册日期
     avatar_path = models.FilePathField(null=True) # 用户头像路径
+    fans = models.IntegerField(default=0) # 粉丝数
 
     def __str__(self):
         return self.name
