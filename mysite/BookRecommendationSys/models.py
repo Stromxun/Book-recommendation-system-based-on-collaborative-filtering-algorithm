@@ -47,7 +47,7 @@ class Token(models.Model):
     userID = models.ForeignKey(User, on_delete=models.CASCADE)
     tokenPublish = models.BooleanField(default=True) # 发布帖子或评论权限
     tokenCommunication = models.BooleanField(default=True) # 是否被禁言
-    tokenLogin = models.BooleanField(default=False)  # 登录权
+    tokenLogin = models.BooleanField(default=True)  # 登录权
 
     def __str__(self):
         return self.userID
@@ -118,8 +118,16 @@ class Feedbacks(models.Model):
 
 # 用户会话 Session
 class Sessions(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    addTime = models.DateTimeField(auto_now_add=True)
-    userAID = models.BigIntegerField()
-    userBID = models.BigIntegerField()
-    description = models.TextField() # 对话内容
+    session_id = models.BigAutoField(primary_key=True)
+    last_time = models.DateTimeField(auto_now_add=True)
+    userAID = models.BigIntegerField() # 发起者
+    userBID = models.BigIntegerField() # 接受者
+    last_message_id = models.BigIntegerField()  # 该会话最后一条信息的id
+
+class Message(models.Model):
+    message_id = models.BigAutoField(primary_key=True)
+    session_id = models.ForeignKey(Sessions, on_delete=models.CASCADE)  # 所属于的session
+    userID = models.ForeignKey(User, on_delete=models.CASCADE)  # 所属于的user
+    time = models.DateTimeField(auto_now_add=True)
+    description = models.TextField() # 信息内容
+    last_message_id = models.BigIntegerField() # 上一条信息的id
