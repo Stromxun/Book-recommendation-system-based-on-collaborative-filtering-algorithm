@@ -38,6 +38,33 @@
             text-decoration: none;
         }
 
+        /* 搜索栏样式 */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            margin-left: 20px; /* 与导航链接的间距 */
+        }
+        .search-bar input[type="text"] {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 300px; /* 搜索框宽度 */
+        }
+        .search-bar button {
+            padding: 8px 12px;
+            background-color: #fff;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #007bff;
+        }
+        .search-bar button:hover {
+            background-color: #f0f0f0;
+        }
+
         /* 侧边栏 */
         .sidebar {
             width: 250px;
@@ -174,10 +201,17 @@
 
 <!-- 导航栏 -->
 <div class="navbar">
-    <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <div class="logo"><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <!-- 搜索栏 -->
+    <div class="search-bar">
+        <form action="" method="post">
+            <input type="text" placeholder="搜索书籍或用户...">
+            <button>搜索</button>
+        </form>
+    </div>
     <div class="nav-links">
         <a href="#">Book</a>
-        <a href="#">我的空间</a>
+        <a href="{% url 'home' user.userID%}">我的空间</a>
         <a href="#">私信</a>
         <a href="{% url 'login_out' %}">退出登录</a>
     </div>
@@ -189,7 +223,7 @@
     <ul>
         <li><a href="#">空间动态</a></li>
         <li><a href="#">好友列表</a></li>
-        <li><a href="#"> 书单 </a></li>
+        <li><a href="#">书单</a></li>
         <li><a href="#">资料设置</a></li>
     </ul>
 </div>
