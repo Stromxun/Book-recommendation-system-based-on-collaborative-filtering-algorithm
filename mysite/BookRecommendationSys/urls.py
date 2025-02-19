@@ -15,7 +15,7 @@ urlpatterns = [
 
     # 注册部分
     path("register/", views.register, name="register"),
-
+    path("register_finished/", views.register_finished, name="register_finished"),
 
     # 测试部分
     path("test/", views.add_data_about_book, name="test"),

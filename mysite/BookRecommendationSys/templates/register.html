@@ -113,14 +113,18 @@
     <script>
 
         function isGoodPassword(password) {
-            let haveBigC = false, haveSmallC = false, haveNum = false
-            for(let ch of password) {
-                if ('0' <= ch <= '9') haveNum = true
-                if ('A' <= ch <= 'Z') haveBigC = true
-                if ('a' <= ch <= 'z') haveSmallC = true
+            let haveBigC = false, haveSmallC = false, haveNum = false;
+
+            for (let ch of password) {
+                if (ch >= '0' && ch <= '9') haveNum = true; // 检查数字
+                if (ch >= 'A' && ch <= 'Z') haveBigC = true; // 检查大写字母
+                if (ch >= 'a' && ch <= 'z') haveSmallC = true; // 检查小写字母
+
+                // 如果已经满足条件，提前退出循环
+                if (haveNum && haveBigC && haveSmallC) break;
             }
 
-            return haveNum && haveBigC && haveSmallC
+            return haveNum && haveBigC && haveSmallC;
         }
 
 

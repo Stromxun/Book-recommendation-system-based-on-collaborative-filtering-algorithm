@@ -21,7 +21,7 @@ def login(request):
         request.session.set_expiry(1209600) # 两周
         request.session['userID'] = userID
         return user_home(request, userID)
-    return render(request, "login.html")
+    return render(request, "login.html", {'userID': userID})
 
 def generate_group(user_id): # 生成初始group
     group = models.Group(groupName='我的好友', friends='[]')
@@ -31,6 +31,11 @@ def generate_group(user_id): # 生成初始group
 def login_out(request):
     request.session.clear()
     return render(request, 'index.html')
+
+
+def register_finished(request, user):
+    return render(request, 'finish_regis.html', user)
+
 
 def register(request):
     if request.method == "POST":
@@ -45,8 +50,10 @@ def register(request):
         user.save()
         # 生成好友群组
         generate_group(user.userID)
-        return render(request, "index.html")
+        return register_finished(request, {'user' : user})
     return render(request, "register.html")
+
+
 
 # 用户空间
 def total_ding(request, userid):
