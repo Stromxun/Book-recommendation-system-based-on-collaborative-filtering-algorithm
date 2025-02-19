@@ -111,11 +111,27 @@
     </style>
 
     <script>
+
+        function isGoodPassword(password) {
+            let haveBigC = false, haveSmallC = false, haveNum = false
+            for(let ch of password) {
+                if ('0' <= ch <= '9') haveNum = true
+                if ('A' <= ch <= 'Z') haveBigC = true
+                if ('a' <= ch <= 'z') haveSmallC = true
+            }
+
+            return haveNum && haveBigC && haveSmallC
+        }
+
+
         function validatePassword() {
             const password = document.getElementById("password").value;
             const confirmPassword = document.getElementById("confirm-password").value;
             const errorMessage = document.getElementById("error-message");
-
+            if (!isGoodPassword(password)) {
+                window.alert("密码不合符规范")
+                return false
+            }
             if (password !== confirmPassword) {
                 errorMessage.style.display = "block"; // 显示错误信息
                 return false; // 阻止表单提交
@@ -144,11 +160,10 @@
             <label for="email">邮箱:</label>
             <input type="email" id="email" name="email" required>
 
-            <label for="password">密码:</label>
-            <input type="password" id="password" name="password" required minlength="6">
-
+            <label for="password">密码:<a style="font-size: 12px; color:red">(需要包含数字与大小写字母)</a></label>
+            <input type="password" id="password" name="password" required minlength="8">
             <label for="confirm-password">确认密码:</label>
-            <input type="password" id="confirm-password" name="confirm-password" required minlength="6">
+            <input type="password" id="confirm-password" name="confirm-password" required minlength="8">
 
             <input type="submit" value="注册">
             <span id="error-message" class="error-message">确认密码与密码不匹配请重新输入！</span><br><br>
