@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ goal_name }}的关注</title>
+    <title>{{ goal.name }}的关注</title>
     <style>
         /* 全局样式 */
         body {
@@ -238,7 +238,7 @@
     <h3>阅读空间</h3>
     <ul>
         <li><a href="#">空间动态</a></li>
-        <li><a style="color: #007bff"> {% if goal_id|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
+        <li><a style="color: #007bff"> {% if goal.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
         <li><a href="#">书单</a></li>
         <li><a href="#">资料设置</a></li>
     </ul>
@@ -251,10 +251,12 @@
         <div class="friend-list-container">
             <h3>关注列表</h3>
             <div class="friend-list">
+                {% load static %}
                 {% for up in ups %}
-                    <div class="friend-item">
-                        <img src="{{ up.avatar_path }}" alt="{{ up.name }}" class="friend-avatar">
-                        <span class="friend-name">{{ up.name }}</span>
+                    <div class="friend-item" onclick="location.href='{% url 'home' up.userID %}';"  style="cursor:pointer;">
+                        <img src="{% static up.avatar_path %}" alt="{{ up.name }}" class="friend-avatar"> &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+                        <span class="friend-name"> <b>{{ up.name }}</b></span> &nbsp&nbsp&nbsp&nbsp
+                        <a style="font-size: 15px; color: #007bff">ID:{{ up.userID }}</a>
                     </div>
                 {% endfor %}
             </div>

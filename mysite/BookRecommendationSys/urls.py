@@ -10,6 +10,8 @@ urlpatterns = [
     # 用户空间
     path("<int:goal_id>/home/", views.home, name="home"),
     path("<int:goal_id>/up/", views.up, name="up"),
+    path("<int:goal_id>/follow/", views.follow, name="follow"),
+path("<int:goal_id>/unfollow/", views.unfollow, name="unfollow"),
 
     # 登录部分
     path('login/', views.login, name='login'),

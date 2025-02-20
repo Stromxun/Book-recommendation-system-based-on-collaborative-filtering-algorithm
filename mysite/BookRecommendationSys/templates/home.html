@@ -268,7 +268,7 @@
         {% if goal.userID|stringformat:"s" != request.session.userID %}
         <div class="profile-actions">
             <button>私信</button>
-            {% if followed %}<button> 取消关注 </button> {% else %} <button href="{% url '' %}"> 关注 </button>{% endif %}
+            {% if followed %}<button onclick="location.href='{% url 'unfollow' goal.userID %}';"> 取消关注 </button> {% else %} <button onclick="location.href='{% url 'follow' goal.userID %}';"> 关注 </button>{% endif %}
         </div>
         {% endif %}
     </div>

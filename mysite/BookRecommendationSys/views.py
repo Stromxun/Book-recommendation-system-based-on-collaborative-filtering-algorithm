@@ -94,18 +94,38 @@ def add_up(request, goal_id):
     group.ups = get_id_list_from_str(group.ups) + [goal_id]
     group.save()
 
+def delete_up(request, goal_id):
+    group = models.Group.objects.get(user=models.User.objects.get(userID=request.session['userID']))  # 找出
+    new_ups = get_id_list_from_str(group.ups).remove(goal_id)
+    if new_ups:
+        group.ups = new_ups
+    else:
+        group.ups = '[]'
+    group.save()
+
+def is_followed(request, goal_id):
+    group = models.Group.objects.get(user=models.User.objects.get(userID=request.session['userID']))  # 找出
+    return goal_id in get_id_list_from_str(group.ups)
 
 def follow(request, goal_id): # session中的用户关注目标用户
     goal = models.User.objects.get(userID=goal_id)
-    goal.fans += 1, goal.save() # 增加粉丝
+    goal.fans += 1
+    goal.save() # 增加粉丝
     add_up(request, goal_id)
+    return HttpResponseRedirect('/{0}/home/'.format(goal_id), {'followed' : is_followed(request, goal_id)})
 
+def unfollow(request, goal_id): # 取消关注
+    goal = models.User.objects.get(userID=goal_id)
+    goal.fans -= 1
+    goal.save()  # 减少粉丝
+    delete_up(request, goal_id)
+    return HttpResponseRedirect('/{0}/home/'.format(goal_id), {'followed': is_followed(request, goal_id)})
 
 def up(request, goal_id):
     goal = models.User.objects.get(userID=goal_id)
     ups = []
     for up_id in get_id_list_from_str(models.Group.objects.get(user=goal).ups):
-        ups += models.User.objects.get(userID=up_id)
+        ups += [models.User.objects.get(userID=up_id)]
     return render(request, 'up.html', {'goal': goal, 'ups' : ups})
 
 def get_fans(userid):
@@ -125,6 +145,7 @@ def home(request, goal_id):
             "ding": total_ding(request, goal_id),
             "num_friends": len(all_friends(request, goal_id)),
             "fans": get_fans(goal_id),
+            "followed": is_followed(request, goal_id)
         })
     else: # 没有user_id代表没有登录
         return login(request)
