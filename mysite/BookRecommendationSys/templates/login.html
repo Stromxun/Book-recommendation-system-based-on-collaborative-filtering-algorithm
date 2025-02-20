@@ -123,10 +123,18 @@
 <div class="footer">
     欢迎您使用本系统，祝您拥有一个美好的阅读体验！
 </div>
-{% if userID %}
+{% if userID > 0 %}
     <script>
-        alert('密码错误，请重新输入！')
-        document.getElementById("userID").value = {{ userID }}
+        window.onload = function() {
+            document.getElementById("userID").value = {{ userID }}
+            alert('密码错误，请重新输入！')
+        };
+    </script>
+{% elif userID == -1%}
+    <script>
+        window.onload = function() {
+            alert('账户不存在，请注册账号！')
+        };
     </script>
 {% endif %}
 </body>

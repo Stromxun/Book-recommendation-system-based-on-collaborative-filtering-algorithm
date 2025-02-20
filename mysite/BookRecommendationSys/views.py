@@ -17,16 +17,17 @@ def login(request):
         return render(request, "login.html")
     userID = request.POST['userID']
     password = request.POST['password']
-    if password == models.User.objects.all().get(userID=userID).pwd:
+    if not models.User.objects.filter(userID=userID).exists():
+        return render(request, 'login.html', {'userID': -1})
+    elif password == models.User.objects.all().get(userID=userID).pwd:
         request.session.set_expiry(1209600) # 两周
         request.session['userID'] = userID
-        return user_home(request, userID)
-    return render(request, "login.html", {'userID': userID})
+        return HttpResponseRedirect('/{0}/home/'.format(userID))
+    return render(request, "login.html", {'userID': int(userID)})
 
-def generate_group(user_id): # 生成初始group
-    group = models.Group(groupName='我的好友', friends='[]')
+def generate_group(user): # 生成初始group
+    group = models.Group(user=user, ups='[]')
     group.save()
-    models.GroupList.objects.create(userID_id=user_id, groupList='[{0}]'.format(group.groupID))
 
 def login_out(request):
     request.session.clear()
@@ -49,15 +50,15 @@ def register(request):
         user = models.User(name=username, email=email, pwd=password, birthday=datetime.date(1975, 1, 1), sign=sign, sex=sex, avatar_path=path)
         user.save()
         # 生成好友群组
-        generate_group(user.userID)
+        generate_group(user)
         return register_finished(request, {'user' : user})
     return render(request, "register.html")
 
 
 
 # 用户空间
-def total_ding(request, userid):
-    forum_list = models.Forums.objects.filter(userID_id=userid)
+def total_ding(request, user):
+    forum_list = models.Forums.objects.filter(user=user)
     if not forum_list.exists():
         return 0
     ans = 0
@@ -67,7 +68,7 @@ def total_ding(request, userid):
 
 
 # 算是一种对数据库中存储字符串的解释
-def get_id_from_list(group_list): # 输出字符串列表中的所有id
+def get_id_list_from_str(group_list): # 输出字符串列表中的所有id
     # example:
     # >> group_list
     # >> "[1001, 1002, 1003]"
@@ -81,13 +82,31 @@ def get_id_from_list(group_list): # 输出字符串列表中的所有id
             group_id = 10 * group_id + int(c)
     return group_id_list
 
-def all_friends(request, userid): # 输出所有好友id
-    group_list = models.GroupList.objects.get(userID_id=userid)
-    friends = [] # 存储好友id
-    for group_id in get_id_from_list(group_list.groupList):
-        group = models.Group.objects.get(groupID=group_id)
-        friends.append(get_id_from_list(group.friends))
-    return friends
+def all_friends(request, user): # 输出所有好友id
+    ups = models.Group.objects.get(user=user).ups
+    all_up = [] # 存储好友id
+    for up_id in get_id_list_from_str(ups):
+        all_up += (models.User.objects.filter(userID=up_id))
+    return all_up
+
+def add_up(request, goal_id):
+    group = models.Group.objects.get(user=models.User.objects.get(userID=request.session['userID'])) # 找出
+    group.ups = get_id_list_from_str(group.ups) + [goal_id]
+    group.save()
+
+
+def follow(request, goal_id): # session中的用户关注目标用户
+    goal = models.User.objects.get(userID=goal_id)
+    goal.fans += 1, goal.save() # 增加粉丝
+    add_up(request, goal_id)
+
+
+def up(request, goal_id):
+    goal = models.User.objects.get(userID=goal_id)
+    ups = []
+    for up_id in get_id_list_from_str(models.Group.objects.get(user=goal).ups):
+        ups += models.User.objects.get(userID=up_id)
+    return render(request, 'up.html', {'goal': goal, 'ups' : ups})
 
 def get_fans(userid):
     fans = models.User.objects.get(userID=userid).fans
@@ -98,15 +117,14 @@ def get_fans(userid):
     else: # 亿级单位
         return '{0}.{1}亿'.format(int(fans/1e9), int(fans / 1e8) % 10)
 
-def user_home(request, userid):
-    if userid :
-        user = models.User.objects.get(userID=userid)
-
+def home(request, goal_id):
+    if goal_id :
+        goal = models.User.objects.get(userID=goal_id)
         return render(request, "home.html", {
-            "user": user,
-            "ding": total_ding(request, userid),
-            "num_friends": len(all_friends(request, userid)),
-            "fans": get_fans(userid),
+            "goal": goal,
+            "ding": total_ding(request, goal_id),
+            "num_friends": len(all_friends(request, goal_id)),
+            "fans": get_fans(goal_id),
         })
     else: # 没有user_id代表没有登录
         return login(request)

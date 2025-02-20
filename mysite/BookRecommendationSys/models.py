@@ -35,7 +35,7 @@ class User(models.Model): # 用户模型
 
 class BookList(models.Model): # 书单模型
     bookListId = models.BigAutoField(primary_key=True)
-    userID = models.ForeignKey(User, on_delete=models.CASCADE) # 外键
+    user = models.ForeignKey(User, on_delete=models.CASCADE) # 外键
     description = models.TextField()  # 书单描述
     bookList = models.TextField(blank=True) # 通过字符串来存储书单中书本的ISBN
 
@@ -44,36 +44,29 @@ class BookList(models.Model): # 书单模型
 
 # 权限
 class Token(models.Model):
-    userID = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     tokenPublish = models.BooleanField(default=True) # 发布帖子或评论权限
     tokenCommunication = models.BooleanField(default=True) # 是否被禁言
     tokenLogin = models.BooleanField(default=True)  # 登录权
 
     def __str__(self):
-        return self.userID
+        return self.user.userID
 
 # 通过Group 和 GroupList 构成好友系统
 class Group(models.Model): # 群组
     groupID = models.BigAutoField(primary_key=True, auto_created=True)
-    groupName = models.CharField(max_length=120)
-    friends = models.TextField(blank=True)  # 好友列表 以用户ID字符形式
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # ups = '[1, 2, 3, ...]'
+    ups = models.TextField(blank=True)  # 好友列表 以用户ID字符形式
 
     def __str__(self):
         return self.groupID
-
-class GroupList(models.Model): # 该用户的所有群组
-    groupListID = models.BigAutoField(primary_key=True)
-    userID = models.ForeignKey(User, on_delete=models.CASCADE)
-    groupList = models.TextField(blank=True)  #以 groupID 来组成
-
-    def __str__(self):
-        return self.groupListID
 
 # 评论
 class Comments(models.Model):
     commentID = models.BigAutoField(primary_key=True, auto_created=True)
     ForumID = models.BigIntegerField() # 评论的帖子的ID
-    userID = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.CharField(max_length=400) # 评论内容
     objectID = models.BigIntegerField(blank=True) # 评论的对象ID
     addTime = models.DateTimeField(auto_now_add=True) #评论时间
@@ -82,7 +75,7 @@ class Comments(models.Model):
         return self.commentID
 
 class Favorites(models.Model):
-    userID = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     listName = models.CharField(max_length=120) # 喜爱列表名
     isOpen = models.BooleanField(default=True) # 是否公开
     bookList = models.TextField(blank=True)
@@ -91,7 +84,7 @@ class Favorites(models.Model):
 # 论坛
 class Forums(models.Model):
     id = models.BigAutoField(primary_key=True) # 帖子id
-    userID = models.ForeignKey(User, on_delete=models.CASCADE) # 帖子发起者
+    user = models.ForeignKey(User, on_delete=models.CASCADE) # 帖子发起者
     detail = models.TextField(blank=True) # 内容
     addTime = models.DateTimeField(auto_now_add=True) # 发布时间
     ding = models.IntegerField(default=0) # 点赞数
@@ -111,8 +104,8 @@ class Feedbacks(models.Model):
     id = models.BigAutoField(primary_key=True)
     addTime = models.DateTimeField(auto_now_add=True)
     description = models.TextField() #内容
-    userID = models.ForeignKey(User, on_delete=models.CASCADE) # 发布用户
-    adminID = models.ForeignKey(Admins, on_delete=models.CASCADE) # 管理员
+    user = models.ForeignKey(User, on_delete=models.CASCADE) # 发布用户
+    admin = models.ForeignKey(Admins, on_delete=models.CASCADE) # 管理员
     replyInformation = models.TextField(blank=True) # 回复信息
     checkStatus = models.BooleanField(default=False) # 处理状态
 
@@ -126,8 +119,8 @@ class Sessions(models.Model):
 
 class Message(models.Model):
     message_id = models.BigAutoField(primary_key=True)
-    session_id = models.ForeignKey(Sessions, on_delete=models.CASCADE)  # 所属于的session
-    userID = models.ForeignKey(User, on_delete=models.CASCADE)  # 所属于的user
+    from_session = models.ForeignKey(Sessions, on_delete=models.CASCADE)  # 所属于的session
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # 所属于的user
     time = models.DateTimeField(auto_now_add=True)
     description = models.TextField() # 信息内容
     last_message_id = models.BigIntegerField() # 上一条信息的id
