@@ -135,9 +135,3 @@ class Message(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     description = models.TextField() # 信息内容
     last_message_id = models.BigIntegerField() # 上一条信息的id
-
-# 点赞
-class Star(models.Model):
-    star_id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
