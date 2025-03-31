@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注册成功</title>
-     <style>
+    <style>
         /* 全局样式 */
         body {
             font-family: Arial, sans-serif;
@@ -23,6 +23,11 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
         }
         .navbar .logo {
             font-size: 24px;
@@ -100,19 +105,19 @@
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
-        <div class="nav-links">
-            <a href="{% url 'index' %}">返回首页</a>
-        </div>
+<div class="navbar">
+    <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <div class="nav-links">
+        <a href="{% url 'index' %}">返回首页</a>
     </div>
-    <div class="login-container">
-        <h2>尊敬的{{ user.name }}，您的账号为： {{ user.userID }}</h2>
-        <form action="{% url 'login' %}" method="get">
-            {% csrf_token %}
-            <input type="submit" value="注册好了，登录喽！">
-        </form>
-    </div>
+</div>
+<div class="login-container">
+    <h2>尊敬的{{ user.name }}，您的账号为： {{ user.userID }}</h2>
+    <form action="{% url 'login' %}" method="get">
+        {% csrf_token %}
+        <input type="submit" value="注册好了，登录喽！">
+    </form>
+</div>
 <!-- 页脚 -->
 <div class="footer">
     欢迎您使用本系统，祝您拥有一个美好的阅读体验！

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
+        }
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .navbar .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+        .navbar .nav-links a:hover {
+            text-decoration: none;
+        }
+        /* 搜索栏样式 */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            margin-left: 20px; /* 与导航链接的间距 */
+        }
+        .search-bar input[type="text"] {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 300px; /* 搜索框宽度 */
+        }
+        .search-bar button {
+            padding: 8px 12px;
+            background-color: #fff;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #007bff;
+        }
+        .search-bar button:hover {
+            background-color: #f0f0f0;
+        }
+        .main-content {
+            padding: 20px;
+            margin: 100px auto 20px; /* 修改上边距 */
+            max-width: 1200px;
+            border-radius: 8px;
+            position: relative;  /* 确保内容层级在导航栏下方 */
+            z-index: 1;
+        }
+        /* 页脚 */
+        .footer {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<div class="navbar">
+    <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <div class="search-bar">
+        <form action="" method="post">
+            <input type="text" placeholder="搜索书籍或用户...">
+            <button>搜索</button>
+        </form>
+    </div>
+    <div class="nav-links">
+        {% if request.session.userID %}
+            <a href="{% url 'index' %}">首页</a>
+            <a href="{% url 'home' request.session.userID %}">我的空间</a>
+            <a href="#">私信</a>
+            <a href="{% url 'login_out' %}">退出登录</a>
+        {% else %}
+            <a href="{% url 'login' %}">登录</a>
+            <a href="{% url 'register' %}">注册</a>
+        {% endif %}
+    </div>
+</div>
+<!-- 主页内容 -->
+
+<!-- 页脚 -->
+<div class="footer">
+    欢迎您使用本系统，祝您拥有一个美好的阅读体验！
+</div>
+</body>
+</html>

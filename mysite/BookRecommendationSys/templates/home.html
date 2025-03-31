@@ -23,6 +23,11 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
         }
         .navbar .logo {
             font-size: 24px;
@@ -99,10 +104,12 @@
 
         /* 主体内容 */
         .main-content {
-            margin-left: 250px;
             padding: 20px;
-            background-color: #f0f2f5;
-            min-height: calc(100vh - 60px);
+            margin: 100px auto 20px; /* 修改上边距 */
+            max-width: 1200px;
+            border-radius: 8px;
+            position: relative;  /* 确保内容层级在导航栏下方 */
+            z-index: 1;
         }
         .profile-container {
             background-color: #fff;
@@ -210,7 +217,7 @@
         </form>
     </div>
     <div class="nav-links">
-        <a href="#">Book</a>
+        <a href="{% url 'index' %}">首页</a>
         <a href="{% url 'home' request.session.userID%}">我的空间</a>
         <a href="#">私信</a>
         <a href="{% url 'login_out' %}">退出登录</a>
@@ -223,7 +230,7 @@
     <ul>
         <li><a href="#">空间动态</a></li>
         <li><a href="{% url 'up' goal.userID%}">{% if goal.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
-        <li><a href="#">书单</a></li>
+        <li><a href="{% url 'home_book_list' goal.userID%}">书单</a></li>
         <li><a href="#">资料设置</a></li>
     </ul>
 </div>
@@ -266,10 +273,10 @@
 
         <!-- 操作按钮：发消息、加好友 -->
         {% if goal.userID|stringformat:"s" != request.session.userID %}
-        <div class="profile-actions">
-            <button>私信</button>
-            {% if followed %}<button onclick="location.href='{% url 'unfollow' goal.userID %}';"> 取消关注 </button> {% else %} <button onclick="location.href='{% url 'follow' goal.userID %}';"> 关注 </button>{% endif %}
-        </div>
+            <div class="profile-actions">
+                <button>私信</button>
+                {% if followed %}<button onclick="location.href='{% url 'unfollow' goal.userID %}';"> 取消关注 </button> {% else %} <button onclick="location.href='{% url 'follow' goal.userID %}';"> 关注 </button>{% endif %}
+            </div>
         {% endif %}
     </div>
 </div>

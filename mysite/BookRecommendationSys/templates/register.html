@@ -23,6 +23,11 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
         }
         .navbar .logo {
             font-size: 24px;
@@ -148,34 +153,34 @@
 </head>
 <body>
 
-    <div class="navbar">
-        <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
-        <div class="nav-links">
-            <a href="{% url 'index' %}">返回首页</a>
-        </div>
+<div class="navbar">
+    <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <div class="nav-links">
+        <a href="{% url 'index' %}">返回首页</a>
     </div>
-    <div class="register-container">
-        <h2>注册</h2>
-        <form action="{% url "register" %}" method="POST" onsubmit="return validatePassword()">
-            {% csrf_token %}
-            <label for="username">用户名:</label>
-            <input type="text" id="username" name="username" required>
+</div>
+<div class="register-container">
+    <h2>注册</h2>
+    <form action="{% url "register" %}" method="POST" onsubmit="return validatePassword()">
+        {% csrf_token %}
+        <label for="username">用户名:</label>
+        <input type="text" id="username" name="username" required>
 
-            <label for="email">邮箱:</label>
-            <input type="email" id="email" name="email" required>
+        <label for="email">邮箱:</label>
+        <input type="email" id="email" name="email" required>
 
-            <label for="password">密码:<a style="font-size: 12px; color:red">(需要包含数字与大小写字母)</a></label>
-            <input type="password" id="password" name="password" required minlength="8">
-            <label for="confirm-password">确认密码:</label>
-            <input type="password" id="confirm-password" name="confirm-password" required minlength="8">
+        <label for="password">密码:<a style="font-size: 12px; color:red">(需要包含数字与大小写字母)</a></label>
+        <input type="password" id="password" name="password" required minlength="8">
+        <label for="confirm-password">确认密码:</label>
+        <input type="password" id="confirm-password" name="confirm-password" required minlength="8">
 
-            <input type="submit" value="注册">
-            <span id="error-message" class="error-message">确认密码与密码不匹配请重新输入！</span><br><br>
-        </form>
-        <div class="login-link">
-            已经拥有账户? <a href="{% url "login" %}">登录</a>
-        </div>
+        <input type="submit" value="注册">
+        <span id="error-message" class="error-message">确认密码与密码不匹配请重新输入！</span><br><br>
+    </form>
+    <div class="login-link">
+        已经拥有账户? <a href="{% url "login" %}">登录</a>
     </div>
+</div>
 <div class="footer">
     欢迎您使用本系统，祝您拥有一个美好的阅读体验！
 </div>

@@ -23,6 +23,11 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
         }
         .navbar .logo {
             font-size: 24px;
@@ -73,10 +78,102 @@
             bottom: 0;
             width: 100%;
         }
+        .main-content {
+            padding: 20px;
+            margin: 100px auto 20px; /* 修改上边距 */
+            max-width: 1200px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;  /* 确保内容层级在导航栏下方 */
+            z-index: 1;
+        }
+
+        /* 书籍项样式 */
+        .book-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .book-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* 分页样式 */
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .pagination a {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 0 4px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .pagination a:hover {
+            background-color: #0056b3;
+        }
+
+        .current-page {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 0 4px;
+            background-color: #6c757d;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .book-cover {
+            width: 80px;
+            height: 110px;
+            object-fit: cover;
+            margin-right: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .book-info {
+            flex-grow: 1;
+        }
+
+        .book-title-link {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .book-title-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .favorite-btn {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 24px;
+            color: #ccc; /* 默认灰色 */
+            margin-left: 15px;
+        }
+
+        .favorite-btn.active {
+            color: #ff4081; /* 激活状态粉色 */
+        }
+
+        .book-actions {
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
-    <!-- 导航栏 -->
+<!-- 导航栏 -->
 <div class="navbar">
     <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
     <div class="search-bar">
@@ -87,7 +184,7 @@
     </div>
     <div class="nav-links">
         {% if request.session.userID %}
-            <a href="#">Book</a>
+            <a href="{% url 'index' %}">首页</a>
             <a href="{% url 'home' request.session.userID %}">我的空间</a>
             <a href="#">私信</a>
             <a href="{% url 'login_out' %}">退出登录</a>
@@ -97,7 +194,51 @@
         {% endif %}
     </div>
 </div>
-    <!-- 主页内容 -->
+<!-- 主页内容 -->
+<div class="main-content">
+    {% for book in books %}
+        <div class="book-item">
+            <!-- 图书封面和基本信息 -->
+            <a href="{% url 'book' book.ISBN %}">
+                <img src="{{ book.imageURL }}" alt="{{ book.BookTitle }}封面" class="book-cover">
+            </a>
+            <div class="book-info">
+
+                <h3><a href="{% url 'book' book.ISBN %}" class="book-title-link">{{ book.BookTitle }} </a></h3>
+                <p>作者：{{ book.BookAuthor }} | 出版社：{{ book.Publisher }} | 出版年份：{{ book.YearOfPublication }}</p>
+                <p>评分：{{ book.score }}</p>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="book-actions">
+                <!-- 收藏按钮 -->
+                {% load static %}
+                {% load custom_filters %}
+                {% if book.ISBN|to_int in favorites %} <img src="{% static "img/icon/heart0.svg" %}" alt="like" width="30px" height="30px">
+                {% else %} <img src="{% static "img/icon/heart1.svg" %}" alt="unlike" width="30px" height="30px">
+                {% endif %}
+            </div>
+
+        </div>
+    {% endfor %}
+
+    <!-- 分页导航 -->
+    <div class="pagination">
+        {% if books.has_previous %}
+            <a href="?page=1">首页</a>
+            <a href="?page={{ books.previous_page_number }}">上一页</a>
+        {% endif %}
+
+        <span class="current-page">
+                第 {{ books.number }} 页 / 共 {{ books.paginator.num_pages }} 页
+            </span>
+
+        {% if books.has_next %}
+            <a href="?page={{ books.next_page_number }}">下一页</a>
+            <a href="?page={{ books.paginator.num_pages }}">末页</a>
+        {% endif %}
+    </div>
+</div>
 
 <!-- 页脚 -->
 <div class="footer">

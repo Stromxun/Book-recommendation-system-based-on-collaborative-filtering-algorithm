@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录</title>
-     <style>
+    <style>
         /* 全局样式 */
         body {
             font-family: Arial, sans-serif;
@@ -23,6 +23,11 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
         }
         .navbar .logo {
             font-size: 24px;
@@ -101,24 +106,24 @@
 </head>
 <body>
 
-    <div class="navbar">
-        <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
-        <div class="nav-links">
-            <a href="{% url 'index' %}">返回首页</a>
-        </div>
+<div class="navbar">
+    <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <div class="nav-links">
+        <a href="{% url 'index' %}">返回首页</a>
     </div>
-    <div class="login-container">
-        <h2>登录</h2>
-        <form action="{% url 'login' %}" method="post">
-            {% csrf_token %}
-            <input type="text" name="userID" id="userID" placeholder="账号" required>
-            <input type="password" name="password" placeholder="密码" required>
-            <input type="submit" value="登录">
-        </form>
-        <div class="register-link">
-            <p>还没有账号？<a href="{% url 'register' %}">注册</a></p>
-        </div>
+</div>
+<div class="login-container">
+    <h2>登录</h2>
+    <form action="{% url 'login' %}" method="post">
+        {% csrf_token %}
+        <input type="text" name="userID" id="userID" placeholder="账号" required>
+        <input type="password" name="password" placeholder="密码" required>
+        <input type="submit" value="登录">
+    </form>
+    <div class="register-link">
+        <p>还没有账号？<a href="{% url 'register' %}">注册</a></p>
     </div>
+</div>
 <!-- 页脚 -->
 <div class="footer">
     欢迎您使用本系统，祝您拥有一个美好的阅读体验！

@@ -6,12 +6,12 @@ from django.db import models
 
 class Book(models.Model): # 图书模型
     ISBN = models.CharField(max_length=13, unique=True, primary_key=True) # 主键
-    BookTitle = models.CharField(max_length=255)
-    BookAuthor = models.CharField(max_length=255)
+    BookTitle = models.CharField(max_length=255) # 书名
+    BookAuthor = models.CharField(max_length=255) # 作者
     keyword = models.CharField(max_length=255) # PS:关键字通过逗号隔开
-    description = models.TextField(default="该书暂无详情")
-    YearOfPublication = models.IntegerField()
-    Publisher = models.CharField(max_length=120)
+    description = models.TextField(default="该书暂无详情") # 书籍描述
+    YearOfPublication = models.IntegerField() # 出版年份
+    Publisher = models.CharField(max_length=120) # 出版商
     imageURL = models.URLField() # 图书图片的URL
     score = models.FloatField(default=0) # 图书评分
 
@@ -29,16 +29,27 @@ class User(models.Model): # 用户模型
     signupDate = models.DateField(auto_now_add=True) # 注册日期
     avatar_path = models.FilePathField(null=True) # 用户头像路径
     fans = models.IntegerField(default=0) # 粉丝数
+    ding = models.IntegerField(default=0) # 赞数
 
     def __str__(self):
         return self.name
 
+# 书评
+class Review(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField() # 内容
+    create_time = models.DateTimeField(auto_now_add=True)
+    star = models.FloatField(default=0) # 评分
+
 class BookList(models.Model): # 书单模型
     bookListId = models.BigAutoField(primary_key=True)
+    bookListTitle = models.CharField(max_length=255, default='我的书单') # 书单名
     user = models.ForeignKey(User, on_delete=models.CASCADE) # 外键
     description = models.TextField()  # 书单描述
     bookList = models.TextField(blank=True) # 通过字符串来存储书单中书本的ISBN
-
+    create_time = models.DateTimeField(auto_now_add=True)  # 创建时间
+    fans = models.IntegerField(default=0) # 关注人数
     def __str__(self):
         return self.bookListId
 
@@ -124,3 +135,9 @@ class Message(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     description = models.TextField() # 信息内容
     last_message_id = models.BigIntegerField() # 上一条信息的id
+
+# 点赞
+class Star(models.Model):
+    star_id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
