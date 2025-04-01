@@ -106,12 +106,12 @@
 
         /* 主体内容 */
         .main-content {
-            padding: 20px;
-            margin: 100px auto 20px; /* 修改上边距 */
+            flex: 1;
+            padding: 100px 20px 60px; /* 下内边距预留footer空间 */
             max-width: 1200px;
-            border-radius: 8px;
-            position: relative;  /* 确保内容层级在导航栏下方 */
-            z-index: 1;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .profile-container {
@@ -242,7 +242,7 @@
         <a href="{% url 'login_out' %}">退出登录</a>
     </div>
 </div>
-
+{% load custom_filters %}
 <!-- 侧边栏 -->
 <div class="sidebar">
     <h3>阅读空间</h3>
@@ -250,7 +250,7 @@
         <li><a href="#">空间动态</a></li>
         <li><a style="color: #007bff"> {% if goal.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
         <li><a href="{% url 'home_book_list' goal.userID%}">书单</a></li>
-        <li><a href="#">资料设置</a></li>
+        {% if request.session.userID|to_int == goal.userID%} <li><a href="{% url 'home_setting' goal.userID %}">资料设置</a></li> {% endif %}
     </ul>
 </div>
 

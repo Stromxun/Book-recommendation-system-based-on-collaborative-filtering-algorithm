@@ -106,12 +106,12 @@
 
         /* 主体内容 */
         .main-content {
-            padding: 20px;
-            margin: 100px auto 20px; /* 修改上边距 */
+            flex: 1;
+            padding: 100px 20px 60px; /* 下内边距预留footer空间 */
             max-width: 1200px;
-            border-radius: 8px;
-            position: relative;  /* 确保内容层级在导航栏下方 */
-            z-index: 1;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
         }
         .profile-container {
             background-color: #fff;
@@ -408,6 +408,76 @@
                 aspect-ratio: 3/4;
             }
         }
+
+        .list-switcher {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .list-switcher a {
+            display: inline-block;
+            padding: 8px 20px;
+            margin-right: 15px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s;
+        }
+
+        .list-switcher a.active {
+            color: #007bff;
+            background: #e3f2fd;
+            border-bottom: 2px solid #007bff;
+        }
+
+        .list-switcher a:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-edit, .btn-delete {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .btn-edit:hover {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc3545;
+            color: white;
+        }
+        .header-title-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .new-booklist-btn {
+            background: #007bff;
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .new-booklist-btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+        }
     </style>
 </head>
 <body>
@@ -438,7 +508,7 @@
         <li><a href="#">空间动态</a></li>
         <li><a href="{% url 'up' goal.userID%}">{% if goal.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
         <li><a href="{% url 'home_book_list' goal.userID %}">书单</a></li>
-        <li><a href="#">资料设置</a></li>
+        {% if request.session.userID|to_int == goal.userID%} <li><a href="{% url 'home_setting' goal.userID %}">资料设置</a></li> {% endif %}
     </ul>
 </div>
 
@@ -446,16 +516,28 @@
     <div class="booklist-container">
         <!-- 书单标题区 -->
         <div class="booklist-header">
-            <h2>{{ goal.name }}的书单收藏</h2>
+            <div class="list-switcher">
+                <a href="?type=my" class="{% if list_type == 'my' %}active{% endif %}">{% if request.session.userID|to_int == goal.userID %}我{% else %}TA{% endif %}的书单({{ my_count }})</a>
+                <a href="?type=follow" class="{% if list_type == 'follow' %}active{% endif %}">关注的书单 ({{ follow_count }})</a>
+            </div>
+            <div class="header-title-bar">  <!-- 新增标题容器 -->
+                <h2>{% if list_type == 'my' %}{{ goal.name }}的书单{% else %} {{ goal.name }}关注的书单 {% endif %}</h2>
+                {% if request.session.userID|to_int == goal.userID and list_type == 'my' %}
+                    <button class="new-booklist-btn" onclick="location.href='{% url 'create_bookList' %}'">
+                        ＋ 新增书单
+                    </button>
+                {% endif %}
+            </div>
             <div class="booklist-stats">
                 <span>共{{ book_lists|length }}个书单</span>
-                <span>总收藏{{ total_followers }}次</span>
             </div>
         </div>
 
         <!-- 书单列表 -->
         <div class="booklist-items">
             {% for list in book_lists %}
+                {% if not list.is_public and not list.user.userID == request.session.userID|to_int%}
+                {% else %}
                 <div class="booklist-card">
                     <!-- 左侧封面容器 -->
                     <div class="book-covers">
@@ -471,7 +553,7 @@
                         <div class="card-header">
                             <h3>
                                 <a href="{% url 'booklist' list.bookListId %}" style="text-decoration: none">{{ list.bookListTitle }}</a>
-                                <span class="booklist-tag">书单</span>
+                                <span class="booklist-tag">{% if list.is_public %}公开{% else %}私有{% endif %}书单</span>
                             </h3>
                             <div class="booklist-meta">
                                 <span class="followers">👥 {{ list.fans }}人关注</span>
@@ -485,7 +567,21 @@
                             </div>
                         </div>
                     </div>
+
+                    {% if request.session.userID|to_int == list.user.userID %}
+                        <div class="card-actions">
+                            <form method="get" action="{% url 'update_bookList' list.bookListId%}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-edit">✏️</button>
+                            </form>
+                            <form method="get" action="">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-delete">🗑️</button>
+                            </form>
+                        </div>
+                    {% endif %}
                 </div>
+                {% endif %}
             {% endfor %}
         </div>
     </div>

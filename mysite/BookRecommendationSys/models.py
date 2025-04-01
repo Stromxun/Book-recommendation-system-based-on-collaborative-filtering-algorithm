@@ -50,8 +50,15 @@ class BookList(models.Model): # 书单模型
     bookList = models.TextField(blank=True) # 通过字符串来存储书单中书本的ISBN
     create_time = models.DateTimeField(auto_now_add=True)  # 创建时间
     fans = models.IntegerField(default=0) # 关注人数
+    is_public = models.BooleanField(default=True)
+
     def __str__(self):
         return self.bookListId
+
+class BookListGroup(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE) # 用户
+    book_list = models.TextField(blank=True) # '[]' 存储bookListId
 
 # 权限
 class Token(models.Model):

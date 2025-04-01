@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <link rel="icon" href="{% static 'img/icon/book.png' %}">
-    <title>{{ goal.name }}的阅读空间</title>
+    <title>修改：{{ booklist.bookListTitle }}</title>
     <style>
         /* 全局样式 */
         body {
@@ -204,6 +203,176 @@
             bottom: 0;
             width: 100%;
         }
+        .booklist-form {
+            padding: 30px;
+        }
+
+        .form-title {
+            color: #2c3e50;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 15px;
+            margin: 0 0 30px;
+        }
+
+        .form-section {
+            margin-bottom: 35px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .section-title {
+            color: #007bff;
+            font-size: 18px;
+            margin: 0 0 15px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+        }
+
+        .cover-upload {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .current-cover {
+            width: 120px;
+            height: 160px;
+            border-radius: 8px;
+            object-fit: cover;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .upload-btn {
+            background: #fff;
+            color: #007bff;
+            border: 2px dashed #007bff;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .upload-btn input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn:hover {
+            background: #f0f6ff;
+            transform: translateY(-2px);
+        }
+
+        .form-textarea {
+            width: 100%;
+            height: 100px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            resize: vertical;
+        }
+
+        .tag-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .tag-item {
+            background: #fff;
+            color: #666;
+            border: 1px solid #ddd;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tag-item.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .tag-item input {
+            display: none;
+        }
+
+        .privacy-options {
+            display: flex;
+            gap: 30px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        input:checked + .radio-dot::after {
+            opacity: 1;
+        }
+        input:checked + .radio-dot {
+            background: #e6f0ff;  /* 选中时的背景色 */
+        }
+        .form-actions {
+            text-align: center;
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn-submit {
+            background: #007bff;
+            color: white;
+            padding: 12px 40px;
+            border-radius: 25px;
+        }
+
+        .btn-cancel {
+            background: #f0f2f5;
+            color: #666;
+            padding: 12px 40px;
+            border-radius: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .cover-upload {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .privacy-options {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -225,64 +394,64 @@
         <a href="{% url 'login_out' %}">退出登录</a>
     </div>
 </div>
-{% load custom_filters %}
+
 <!-- 侧边栏 -->
 <div class="sidebar">
     <h3>阅读空间</h3>
     <ul>
         <li><a href="#">空间动态</a></li>
-        <li><a href="{% url 'up' goal.userID%}">{% if goal.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
-        <li><a href="{% url 'home_book_list' goal.userID%}">书单</a></li>
-        {% if request.session.userID|to_int == goal.userID%} <li><a href="{% url 'home_setting' goal.userID %}">资料设置</a></li> {% endif %}
+        <li><a href="{% url 'up' booklist.user.userID%}">{% if booklist.user.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
+        <li><a href="{% url 'home_book_list' booklist.user.userID %}">书单</a></li>
+        <li><a href="#">资料设置</a></li>
     </ul>
 </div>
-
-<!-- 主体内容 -->
 <div class="main-content">
     <div class="profile-container">
-        {% load static %}
-        <!-- 头部：头像和昵称 -->
-        <div class="profile-header">
-            <img src="{% static goal.avatar_path %}" alt="用户头像" height="128" width="128">
-            <h2>{{ goal.name }}</h2>
-            <p>NO.{{ goal.userID }}</p>
-        </div>
+        <!-- 修改书单表单 -->
+        <form class="booklist-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <h2 class="form-title">修改书单：{{ booklist.bookListTitle }}</h2>
 
-        <!-- 统计信息：好友数、动态数 -->
-        <div class="profile-stats">
-            <div>
-                <span>{{ num_friends }}</span>
-                <p>关注数</p>
-            </div>
-            <div>
-                <span>{{ fans }}</span>
-                <p>粉丝数</p>
-            </div>
-            <div>
-                <span>{{ ding }}</span>
-                <p>被赞数</p>
-            </div>
-        </div>
+            <!-- 基本信息 -->
+            <div class="form-section">
+                <div class="input-group">
+                    <label>名称</label>
+                    <input type="text" name="title" value="{{ booklist.bookListTitle }}"
+                           class="form-input" required maxlength="30">
+                </div>
 
-        <!-- 详细信息：简介 -->
-        <div class="profile-details">
-            <h3>简介</h3>
-            <p>{{ goal.sign }}</p>
-            <p>性别：{{ goal.sex }}</p>
-            <p>生日：{{ goal.birthday|date:"Y-m-d" }}</p>
-            <p>🌐 {{ goal.email }}</p>
-        </div>
-
-        <!-- 操作按钮：发消息、加好友 -->
-        {% if goal.userID|stringformat:"s" != request.session.userID %}
-            <div class="profile-actions">
-                <button>私信</button>
-                {% if followed %}<button onclick="location.href='{% url 'unfollow' goal.userID %}';"> 取消关注 </button> {% else %} <button onclick="location.href='{% url 'follow' goal.userID %}';"> 关注 </button>{% endif %}
+                <div class="input-group">
+                    <label>书单描述</label>
+                    <textarea name="description" class="form-textarea"
+                              maxlength="1000">{{ booklist.description }}</textarea>
+                </div>
             </div>
-        {% endif %}
+
+            <!-- 隐私设置 -->
+            <div class="form-section">
+                <h3 class="section-title">隐私设置</h3>
+                <div class="privacy-options">
+                    <label class="radio-item">
+                        <input type="radio" name="privacy" value="public"
+                               {% if booklist.is_public %}checked{% endif %}>
+                        所有人可见
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="privacy" value="private"
+                               {% if not booklist.is_public %}checked{% endif %}>
+                        仅自己可见
+                    </label>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="form-actions">
+                <a href="{% url 'home_book_list' booklist.user.userID%}"><button type="button" class="btn-cancel">返回</button></a>
+                <a href="{% url 'update_bookList' booklist.bookListId%}"><button type="submit" class="btn-submit">更新书单</button></a>
+            </div>
+        </form>
     </div>
 </div>
-
 <!-- 页脚 -->
 <div class="footer">
     欢迎您使用本系统，祝您拥有一个美好的阅读体验！

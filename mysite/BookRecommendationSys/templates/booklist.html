@@ -106,12 +106,12 @@
 
         /* 主体内容 */
         .main-content {
-            padding: 20px;
-            margin: 100px auto 20px; /* 修改上边距 */
+            flex: 1;
+            padding: 100px 20px 60px; /* 下内边距预留footer空间 */
             max-width: 1200px;
-            border-radius: 8px;
-            position: relative;  /* 确保内容层级在导航栏下方 */
-            z-index: 1;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
         }
         .profile-container {
             background-color: #fff;
@@ -383,6 +383,135 @@
             border: 1px solid #eee;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+
+        .description-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .follow-btn {
+            padding: 6px 20px;
+            border-radius: 15px;
+            border: 1px solid #007bff;
+            background: white;
+            color: #007bff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .follow-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+
+        .follow-btn.followed {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+
+        .add-book-form {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .add-book-form input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+            margin-right: 10px;
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-remove:hover {
+            opacity: 0.8;
+        }
+
+        .remove-form {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+        }
+        .book-item {
+            position: relative; /* 为绝对定位提供参考 */
+            padding-right: 60px; /* 给删除按钮留出空间 */
+        }
+
+        .book-actions {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .booklist-actions {
+            display: flex;
+            justify-content: center;
+            margin: 25px 0;
+        }
+
+        .add-book-form {
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .error-input {
+            border: 2px solid #dc3545 !important;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
     </style>
 </head>
 <body>
@@ -426,10 +555,49 @@
 
         <!-- 书籍描述内容 -->
         <div class="booklist-description">
-            <h3>书单描述</h3>
+            <div class="description-header">
+                <h3>书单描述</h3>
+                {% if request.session.userID|to_int != booklist.user.userID %}
+                    <form class="follow-form" action="{% if is_following %} {% url 'booklist_unfollow' booklist.bookListId%} {% else %} {% url 'booklist_follow' booklist.bookListId%} {% endif %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="follow-btn {% if is_following %}followed{% endif %}">
+                            {{ is_following|yesno:"已关注,关注" }}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
             <div class="description-content">
                 <p>{{ booklist.description }}</p>
             </div>
+        </div>
+
+        <div class="booklist-actions">
+            {% if request.session.userID|to_int == booklist.user.userID %}
+                <div class="add-book-form">
+                    <h3 class="form-title">添加书籍到书单</h3>
+                    <form method="post" action="{% url 'add_to_book_list' booklist.bookListId %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="isbn-input" class="input-label">ISBN号：</label>
+                            <input type="text"
+                                   id="isbn-input"
+                                   name="isbn"
+                                   placeholder="请输入10或13位ISBN号码"
+                                   required
+                                   class="form-input {% if messages %}error-input{% endif %}"
+                                   value="{% if messages %}{{ request.POST.isbn }}{% endif %}">
+                            <button type="submit" class="btn-add">立即添加</button>
+                        </div>
+                        {% if messages %}
+                            <div class="error-container">
+                                {% for message in messages %}
+                                    <p class="error-message">{{ message }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            {% endif %}
         </div>
 
         <!-- 书籍列表 -->
@@ -447,19 +615,28 @@
                                 </span>
                             </h2>
                             <div class="rating-container">
-                                    <div class="book-rating">
-                                        {% for star in book.score|generate_star %}
-                                            {% if star == '1' %}
-                                                <img src="{% static 'img/icon/star_full.png' %}" width="12" height="12" alt="★">
-                                            {% elif star == '2'%}
-                                                <img src="{% static 'img/icon/star_half.png' %}" width="12" height="12" alt="★">
-                                            {% else %}
-                                                <img src="{% static 'img/icon/star_empty.png' %}" width="12" height="12" alt="☆">
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                    <span class="score-value" style="color: orange">{{ book.score }}</span>
+                                <div class="book-rating">
+                                    {% for star in book.score|generate_star %}
+                                        {% if star == '1' %}
+                                            <img src="{% static 'img/icon/star_full.png' %}" width="12" height="12" alt="★">
+                                        {% elif star == '2'%}
+                                            <img src="{% static 'img/icon/star_half.png' %}" width="12" height="12" alt="★">
+                                        {% else %}
+                                            <img src="{% static 'img/icon/star_empty.png' %}" width="12" height="12" alt="☆">
+                                        {% endif %}
+                                    {% endfor %}
                                 </div>
+                                <span class="score-value" style="color: orange">{{ book.score }}</span>
+                            </div>
+                            <div class="book-actions">
+                                {% if request.session.userID|to_int == booklist.user.userID %}
+                                    <form method="post" action="{% url 'remove_from_book_list' booklist.bookListId %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="isbn" value="{{ book.ISBN }}">
+                                        <button type="submit" class="btn-remove" title="移除书籍">×</button>
+                                    </form>
+                                {% endif %}
+                            </div>
                             <div class="book-meta">
                             <span class="authors">
                                 作者：{{ book.BookAuthor }}

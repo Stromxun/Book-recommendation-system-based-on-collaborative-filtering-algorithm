@@ -71,12 +71,12 @@
             background-color: #f0f0f0;
         }
         .main-content {
-            padding: 20px;
-            margin: 100px auto 20px; /* 修改上边距 */
+            flex: 1;
+            padding: 100px 20px 60px; /* 下内边距预留footer空间 */
             max-width: 1200px;
-            border-radius: 8px;
-            position: relative;  /* 确保内容层级在导航栏下方 */
-            z-index: 1;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
         }
         /* 页脚 */
         .footer {

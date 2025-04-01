@@ -1,8 +1,9 @@
 import datetime
 from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models import Q
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core.paginator import Paginator
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .action import *
 from .models import *
 
@@ -48,12 +49,13 @@ def register(request):
         password = request.POST['password']
         sign="你好，我是{0}，欢迎来到我的阅读空间".format(username) # 默认值
         sex="男" # 默认值
-        path= "img/user_head/default.jpg"
+        path= "img/user_head/default0.jpg"
         user = User(name=username, email=email, pwd=password, birthday=datetime.date(1975, 1, 1), sign=sign, sex=sex, avatar_path=path)
         user.save()
         # 生成好友群组
         generate_group(user)
         generate_favorite(user)
+        generate_book_list_group(user)
         return register_finished(request, {'user' : user})
     return render(request, "register.html")
 
@@ -88,7 +90,45 @@ def book(request, ISBN):
 
 def booklist(request, bookListId):
     bookList = BookList.objects.get(bookListId=bookListId)
-    return render(request, 'booklist.html', {'booklist': bookList})
+    user = User.objects.get(userID=request.session.get('userID'))
+    booklist_group = BookListGroup.objects.get(user=user)
+    group = get_id_list_from_str(booklist_group.book_list)
+    return render(request, 'booklist.html', {'booklist': bookList, 'is_following' : (int(bookListId) in group)})
+
+
+def add_to_book_list(request, bookListId):
+    booklist = get_object_or_404(BookList, bookListId=bookListId)
+    userID = request.session.get('userID')
+
+    if int(userID) != booklist.user.userID:
+        return JsonResponse({'status': 'error', 'message': '无操作权限'}, status=403)
+
+    isbn = int(request.POST.get('isbn'))
+    if not Book.objects.filter(ISBN=isbn).exists():
+        messages.error(request, '查询不到此书')
+        return redirect('booklist', bookListId=bookListId)
+    add_book_to_book_list(bookListId, isbn)
+    return redirect('booklist', bookListId=bookListId)
+
+
+def remove_from_book_list(request, bookListId):
+    book_list = get_object_or_404(BookList, bookListId=bookListId)
+
+    if int(request.session.get('userID')) != book_list.user.userID:
+        return JsonResponse({'status': 'error', 'message': '无操作权限'}, status=403)
+
+    isbn = int(request.POST.get('isbn'))
+    remove_book_in_list(bookListId, isbn)
+    return redirect('booklist', bookListId=bookListId)
+
+
+def booklist_follow(request, bookListId):
+    add_book_list_follow(request, bookListId)
+    return HttpResponseRedirect('/booklist/{0}'.format(bookListId))
+
+def booklist_unfollow(request, bookListId):
+    delete_book_list_follow(request, bookListId)
+    return HttpResponseRedirect('/booklist/{0}'.format(bookListId))
 
 def like(request, ISBN):
     add_like(request, ISBN)
@@ -148,10 +188,85 @@ def home(request, goal_id):
     else: # 没有user_id代表没有登录
         return login(request)
 
+
 def home_book_list(request, goal_id):
-    user = User.objects.get(userID=goal_id)
+    # 获取目标用户
+    user = get_object_or_404(User, userID=goal_id)
+
+    # 获取当前请求类型参数
+    list_type = request.GET.get('type', 'my')
+
+    # 初始化查询集
     my_book_list = BookList.objects.filter(user=user)
-    return render(request, 'home_booklist.html', {'goal': user, 'book_lists' : my_book_list})
+    follow_book_lists = BookList.objects.none()
+
+    try:
+        # 处理可能不存在的关注组
+        follow_group = BookListGroup.objects.get(user=user).book_list
+        list_ids = get_id_list_from_str(follow_group)
+
+        # 优化查询：使用Q对象组合条件
+        follow_book_lists = BookList.objects.filter(
+            Q(bookListId__in=list_ids)
+        ).select_related('user')
+
+    except BookListGroup.DoesNotExist:
+        pass
+
+    # 根据类型选择数据
+    if list_type == 'follow':
+        book_lists = follow_book_lists
+    else:  # 默认显示我的书单
+        book_lists = my_book_list
+
+    # 统计数量（使用缓存避免重复查询）
+    context = {
+        'goal': user,
+        'book_lists': book_lists,
+        'list_type': list_type,
+        'my_count': my_book_list.count(),
+        'follow_count': follow_book_lists.count(),
+    }
+
+    return render(request, 'home_booklist.html', context)
+
+def create_bookList(request):
+    user = User.objects.get(userID=request.session.get('userID'))
+    # 创建一个默认模板书单
+    booklist = BookList(bookListTitle='我的书单', user=user, description='这是我创建的书单！', bookList='[]')
+    booklist.save()
+    return HttpResponseRedirect('/{0}/booklist'.format(user.userID))
+
+
+
+def delete_bookList(request, bookListId):
+    return None
+
+def update_bookList(request, bookListId):
+    booklist = BookList.objects.get(bookListId=bookListId)
+    if request.method == 'POST':
+        booklist.bookListTitle = request.POST.get('title')
+        booklist.description = request.POST.get('description')
+        booklist.is_public =  request.POST.get('privacy') == 'public'
+        booklist.save()
+        return HttpResponseRedirect('/{0}/booklist'.format(booklist.user.userID))
+    return render(request, 'booklist_update.html', {'booklist': booklist})
+
+def home_setting(request, goal_id):
+    user = User.objects.get(userID=goal_id)
+    if request.method == 'POST':
+        user.name = request.POST.get('name')
+        user.email = request.POST.get('email')
+        user.sex = '男' if request.POST.get('sex') == '男' else '女'
+        user.avatar_path = "img/user_head/default0.jpg" if user.sex == '男' else "img/user_head/default1.png"
+        user.birthday = request.POST.get('birthday')
+        user.sign = request.POST.get('sign')
+        pass_word = request.POST.get('password')
+        if pass_word:
+            user.password = pass_word
+        user.save()
+        return HttpResponseRedirect('/{0}/home'.format(user.userID))
+    return render(request, 'home_setting.html', {'user':user})
 
 
 # 测试函数
@@ -173,5 +288,3 @@ def add_data_about_book(request):
     return render(request, "test.html")
 
 
-
-    return None
