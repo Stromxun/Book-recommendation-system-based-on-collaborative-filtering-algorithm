@@ -122,3 +122,21 @@ def remove_book_in_list(book_list_id, isbn):
     else:
         book_list.bookList = '[]'
     book_list.save()
+
+# 书评
+def re_like(request, review):
+    user_list = get_id_list_from_str(review.zan_user)
+    review.zan_user = user_list + [int(request.session['userID'])]
+    review.zan += 1
+    review.save()
+
+def re_unlike(request, review):
+    new_user_list = get_id_list_from_str(review.zan_user)
+    new_user_list.remove(int(request.session['userID']))
+    if new_user_list:
+        review.zan_user = new_user_list
+    else:
+        review.zan_user = '[]'
+    review.zan -= 1
+    review.zan = revise(review.zan)
+    review.save()

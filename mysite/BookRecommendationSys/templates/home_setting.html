@@ -462,9 +462,10 @@
     <div class="logo"><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
     <!-- 搜索栏 -->
     <div class="search-bar">
-        <form action="" method="post">
-            <input type="text" placeholder="搜索书籍或用户...">
-            <button>搜索</button>
+        <form action="{% url 'base_search' %}" method="post">
+            {% csrf_token %}
+            <input type="text" placeholder="搜索书籍、书单或用户..." name="content">
+            <button type="submit">搜索</button>
         </form>
     </div>
     <div class="nav-links">
@@ -477,7 +478,7 @@
 {% load custom_filters %}
 <!-- 侧边栏 -->
 <div class="sidebar">
-    <h3>阅读空间</h3>
+    <h3><a href="{% url 'home' user.userID%}" style="text-decoration: none; color: #007bff">阅读空间</a></h3>
     <ul>
         <li><a href="#">空间动态</a></li>
         <li><a href="{% url 'up' user.userID%}">{% if user.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
@@ -487,7 +488,7 @@
 </div>
 <div class="main-content">
     <div class="profile-container">
-        <form class="booklist-form" method="post" enctype="multipart/form-data">
+        <form class="booklist-form" method="post" enctype="multipart/form-data" onsubmit="return confirm('确认修改资料吗？');">
             {% csrf_token %}
             {% load static %}
             <h2 class="form-title">用户设置</h2>
@@ -549,7 +550,7 @@
 
             <div class="form-actions">
                 <a href="{% url 'home' user.userID %}"><button type="button" class="btn-cancel">返回</button></a>
-                <a href="{% url 'home_setting' user.userID%}"><button type="submit" class="btn-submit">保存设置</button></a>
+                <a href="{% url 'home_setting' user.userID%}"><button type="submit" class="btn-submit" >保存设置</button></a>
             </div>
         </form>
     </div>

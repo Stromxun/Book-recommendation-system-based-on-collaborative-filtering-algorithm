@@ -2,7 +2,7 @@ import datetime
 from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, redirect, get_object_or_404
 from .action import *
 from .models import *
@@ -61,32 +61,46 @@ def register(request):
 
 def book(request, ISBN):
     book = Book.objects.all().get(ISBN=ISBN)
-    # 预处理星级数据
-    full_score = 10  # 满分10分
-    max_stars = 5  # 最大5星
-    star_value = full_score / max_stars  # 每星代表2分
-
-    # 评分
-    stars = []
-    remaining_score = book.score
-    for _ in range(max_stars):
-        if remaining_score >= star_value * 0.75:  # 1.5分以上显示全星
-            stars.append(1)
-            remaining_score -= star_value
-        elif remaining_score >= star_value * 0.25:  # 0.5分以上显示半星
-            stars.append(0.5)
-            remaining_score = max(remaining_score - star_value, 0)
-        else:
-            stars.append(0)
 
     userID = request.session.get('userID')
+    # 书评
+    top_reviews = Review.objects.filter(book=book).order_by('-star')
     if not userID:
-        return render(request, "book.html", {'book': book, 'stars': stars})
+        return render(request, "book.html", {'book': book, 'top_reviews': top_reviews})
     user = User.objects.get(userID=userID)
 
     my_favorite = get_id_list_from_str(Favorites.objects.get(user=user).bookList)
     is_liked = (int(ISBN) in my_favorite)
-    return render(request, "book.html", {'book': book, 'stars': stars, 'is_liked': is_liked})
+
+    return render(request, "book.html", {'book': book, 'is_liked': is_liked, 'top_reviews': top_reviews})
+
+def review_write(request, ISBN):
+    book = Book.objects.all().get(ISBN=ISBN)
+    if request.method == "POST":
+        content = request.POST['comment']
+        user = User.objects.get(userID=request.session.get('userID'))
+        star = request.POST['star']
+        new_review = Review(content=content, user=user, star=star, book=book)
+        new_review.save()
+        return HttpResponseRedirect('/book/{0}'.format(ISBN))
+    return render(request, 'comment_write.html', {'book': book})
+
+def review_like(request, review_id): # 输入评论id
+    review = Review.objects.get(pk=review_id)
+    re_like(request, review)
+    return HttpResponseRedirect('/book/{0}'.format(review.book.ISBN))
+
+
+def review_unlike(request, review_id):
+    review = Review.objects.get(pk=review_id)
+    re_unlike(request, review)
+    return HttpResponseRedirect('/book/{0}'.format(review.book.ISBN))
+
+def review_delete(request, review_id):
+    review = Review.objects.get(pk=review_id)
+    ISBN = review.book.ISBN
+    review.delete()
+    return HttpResponseRedirect('/book/{0}'.format(ISBN))
 
 def booklist(request, bookListId):
     bookList = BookList.objects.get(bookListId=bookListId)
@@ -137,8 +151,8 @@ def like(request, ISBN):
 def unlike(request, ISBN):
     delete_like(request, ISBN)
     return HttpResponseRedirect('/book/{0}'.format(ISBN))
-# 用户空间
 
+# 用户空间
 def is_followed(request, goal_id):
     group = Group.objects.get(user=User.objects.get(userID=request.session['userID']))  # 找出
     return goal_id in get_id_list_from_str(group.ups)
@@ -240,7 +254,10 @@ def create_bookList(request):
 
 
 def delete_bookList(request, bookListId):
-    return None
+    booklist = BookList.objects.get(bookListId=bookListId)
+    userID = booklist.user.userID
+    booklist.delete()
+    return HttpResponseRedirect('/{0}/booklist'.format(userID))
 
 def update_bookList(request, bookListId):
     booklist = BookList.objects.get(bookListId=bookListId)
@@ -269,6 +286,81 @@ def home_setting(request, goal_id):
     return render(request, 'home_setting.html', {'user':user})
 
 
+def base_search(request):
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        return HttpResponseRedirect('/search/{0}?type=book'.format(content))
+    return HttpResponseRedirect('/index')
+
+
+def search(request, content): # 搜索
+    search_type = request.GET.get('type', 'book')
+    page = request.GET.get('page', 1)
+
+    context = {
+        'content': content,
+        'type': search_type
+    }
+
+    # 设置分页配置
+    pagination_config = {
+        'book': {'per_page': 50, 'context_key': 'books'},
+        'booklist': {'per_page': 50, 'context_key': 'booklists'},
+        'user': {'per_page': 150, 'context_key': 'users'}
+    }
+
+    try:
+        config = pagination_config[search_type]
+        per_page = config['per_page']
+        context_key = config['context_key']
+    except KeyError:
+        search_type = 'book'
+        config = pagination_config['book']
+        per_page = config['per_page']
+        context_key = config['context_key']
+
+    # 查询逻辑
+    if search_type == 'book':
+        query = Q(BookTitle__icontains=content) | Q(BookAuthor__icontains=content)
+        try:
+            query |= Q(ISBN=int(content))
+        except ValueError:
+            pass
+        results = Book.objects.filter(query)
+
+    elif search_type == 'booklist':
+        query = Q(bookListTitle__icontains=content) | Q(description__icontains=content)
+        try:
+            query |= Q(bookListId=int(content))
+        except ValueError:
+            pass
+        results = BookList.objects.filter(query)
+
+    else:  # user
+        query = Q(name__icontains=content)
+        try:
+            query |= Q(userID=int(content))
+        except ValueError:
+            pass
+        results = User.objects.filter(query)
+
+    # 分页处理
+    paginator = Paginator(results, per_page)
+    try:
+        page_obj = paginator.page(page)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    context.update({
+        context_key: page_obj,
+        'count': paginator.count,
+        'page_obj': page_obj
+    })
+
+    return render(request, 'search.html', context)
+
 # 测试函数
 def add_data_about_book(request):
     if request.method == "POST":
@@ -288,3 +380,6 @@ def add_data_about_book(request):
     return render(request, "test.html")
 
 
+def forum(request, forum_id): # 帖子
+    f = Forum.objects.get(id=forum_id)
+    return render(request, 'forum.html', {'post': f})

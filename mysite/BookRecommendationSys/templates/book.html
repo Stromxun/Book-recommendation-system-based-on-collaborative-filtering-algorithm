@@ -176,7 +176,6 @@
             align-items: center;
             gap: 5px;
             color: #666;
-            cursor: pointer;
         }
 
         .review-like.active {
@@ -282,6 +281,113 @@
         .rating-container {
             margin-bottom: 15px;
         }
+
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .write-review-btn {
+            background: #007bff;
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin-left: auto;
+        }
+
+        .write-review-btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+        }
+        .review-author-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .review-rating {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 4px 8px;
+            margin-left: 8px;
+        }
+
+        .rating-star {
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
+            transition: transform 0.2s ease;
+        }
+
+        .rating-score {
+            font-size: 14px;
+            color: #ff9800;
+            font-weight: 500;
+            margin-left: 4px;
+        }
+
+        /* 悬停效果增强 */
+        .review-rating:hover .rating-star {
+            transform: scale(1.15);
+        }
+
+        /* 优化原有样式 */
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .review-author {
+            font-weight: 600;  /* 加粗用户名 */
+            font-size: 15px;
+        }
+
+        .review-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+        }
+
+        .delete-container {
+            margin-left: auto;
+            padding-left: 15px;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+        }
     </style>
 </head>
 <body>
@@ -289,9 +395,10 @@
 <div class="navbar">
     <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
     <div class="search-bar">
-        <form action="" method="post">
-            <input type="text" placeholder="搜索书籍或用户...">
-            <button>搜索</button>
+        <form action="{% url 'base_search' %}" method="post">
+            {% csrf_token %}
+            <input type="text" placeholder="搜索书籍、书单或用户..." name="content">
+            <button type="submit">搜索</button>
         </form>
     </div>
     <div class="nav-links">
@@ -330,13 +437,14 @@
             </div>
             <div class="rating-container">
                 <div class="stars">
-                    {% for star in stars %}
-                        {% if star == 1 %}
-                            <span class="star full">★</span>
-                        {% elif star == 0.5 %}
-                            <span class="star half">★</span>
+                    {% load custom_filters %}
+                    {% for star in book.score|generate_star %}
+                        {% if star == '1' %}
+                            <img src="{% static 'img/icon/star_full.png' %}" width="12" height="12" alt="★">
+                        {% elif star == '2'%}
+                            <img src="{% static 'img/icon/star_half.png' %}" width="12" height="12" alt="★">
                         {% else %}
-                            <span class="star">★</span>
+                            <img src="{% static 'img/icon/star_empty.png' %}" width="12" height="12" alt="☆">
                         {% endif %}
                     {% endfor %}
                 </div>
@@ -351,7 +459,7 @@
                       method="post">
                     {% csrf_token %}
                     <button type="submit" class="favorite-btn {% if not request.session.userID and is_liked %}active{% endif %}">
-                        {%if not request.session.userID %} 登录 {% elif is_liked %} ❤️ 已收藏{% else %}🤍 我喜欢{% endif %}
+                        {%if not request.session.userID %} 登录 {% elif is_liked %} ❤️ 取消收藏{% else %}🤍 我喜欢{% endif %}
                     </button>
                 </form>
             </div>
@@ -367,19 +475,65 @@
 
 <!-- 热门书评区 -->
 <div class="reviews-section">
-    <h2>热门书评（点赞TOP10）</h2>
+    <div class="reviews-header">
+        <h2>{{ book.BookTitle }}的书评</h2>
+        {% if request.session.userID %}
+            <a href="{% url 'review_write' book.ISBN%}" style="text-decoration: none"><button class="write-review-btn">✍️ 写书评</button></a>
+        {% else %}
+            <a href="{% url 'login' %}" class="write-review-btn">🔑 登录后评论</a>
+        {% endif %}
+    </div>
     <div class="review-list">
         {% if top_reviews %}
             {% for review in top_reviews %}
                 <div class="review-item">
+                    <!-- 修改后的评论头部结构 -->
                     <div class="review-header">
-                        <span class="review-author">{{ review.user.username }}</span>
+                        <div class="review-author-container">
+                        <span class="review-author">
+                            <a href="{% url 'home' review.user.userID %}" style="text-decoration: none; color: blue">
+                                {{ review.user.name }}
+                            </a>
+                        </span>
+                            <div class="review-rating">
+                                {% load custom_filters %}
+                                {% for star in review.star|generate_star %}
+                                    {% if star == '1' %}
+                                        <img src="{% static 'img/icon/star_full.png' %}" width="12" height="12" alt="★">
+                                    {% elif star == '2'%}
+                                        <img src="{% static 'img/icon/star_half.png' %}" width="12" height="12" alt="★">
+                                    {% else %}
+                                        <img src="{% static 'img/icon/star_empty.png' %}" width="12" height="12" alt="☆">
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="rating-score">{{ review.star }}</span>
+                            </div>
+                        </div>
                         <span class="review-time">{{ review.create_time|date:"Y-m-d H:i" }}</span>
                     </div>
                     <div class="review-content">{{ review.content }}</div>
-                    <div class="review-like {% if review.is_liked %}active{% endif %}"
-                         data-review-id="{{ review.id }}">
-                        ♥ <span class="like-count">{{ review.like_count }}</span>
+                    {% load custom_filters %}
+                    <div class="review-like">
+                        {% load static %}
+                        {% if request.session.userID %}
+                            <a href="{% if review.zan_user|review_liked:request.session.userID %} {% url 'review_unlike' review.id%} {% else %} {% url 'review_like' review.id%} {% endif %}"><img src="{% if review.zan_user|review_liked:request.session.userID %} {% static 'img/icon/heart_full.png' %} {% else %} {% static 'img/icon/heart_empty.png' %} {% endif %}" alt="" height="20px" width="20px"></a><span class="like-count">{{ review.zan }}</span>
+                        {% else %}
+                            <a href="{% url 'login' %}" style="text-decoration: none">登录后点赞</a>
+                        {% endif %}
+                    </div>
+                    <div class="review-actions">
+                        <!-- 点赞部分保持不变... -->
+                        {% if request.session.userID == review.user.userID|stringformat:"s" %}
+                            <div class="delete-container">
+                                <form action="{% url 'review_delete' review.id %}" method="post"
+                                      onsubmit="return confirm('确定要删除这条评论吗？');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="delete-btn">
+                                        <img src="{% static 'img/icon/trash.png' %}" alt="删除" class="icon">
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             {% endfor %}

@@ -1,6 +1,8 @@
 import datetime
 
 from django.db import models
+from django.db.models import ForeignKey
+
 
 # Create your models here.
 
@@ -41,6 +43,8 @@ class Review(models.Model):
     content = models.TextField() # 内容
     create_time = models.DateTimeField(auto_now_add=True)
     star = models.FloatField(default=0) # 评分
+    zan = models.IntegerField(default=0)  # 赞数
+    zan_user = models.TextField(default='[]') # 赞的用户
 
 class BookList(models.Model): # 书单模型
     bookListId = models.BigAutoField(primary_key=True)
@@ -63,7 +67,7 @@ class BookListGroup(models.Model):
 # 权限
 class Token(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    tokenPublish = models.BooleanField(default=True) # 发布帖子或评论权限
+    tokenPublish = models.BooleanField(default=True) # 评论权限
     tokenCommunication = models.BooleanField(default=True) # 是否被禁言
     tokenLogin = models.BooleanField(default=True)  # 登录权
 
@@ -80,17 +84,6 @@ class Group(models.Model): # 群组
     def __str__(self):
         return self.groupID
 
-# 评论
-class Comments(models.Model):
-    commentID = models.BigAutoField(primary_key=True, auto_created=True)
-    ForumID = models.BigIntegerField() # 评论的帖子的ID
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    comment = models.CharField(max_length=400) # 评论内容
-    objectID = models.BigIntegerField(blank=True) # 评论的对象ID
-    addTime = models.DateTimeField(auto_now_add=True) #评论时间
-
-    def __str__(self):
-        return self.commentID
 
 class Favorites(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -100,17 +93,31 @@ class Favorites(models.Model):
     numOfBooks = models.BigIntegerField(default=0) # 喜欢数目
 
 # 论坛
-class Forums(models.Model):
+class Forum(models.Model):
     id = models.BigAutoField(primary_key=True) # 帖子id
     user = models.ForeignKey(User, on_delete=models.CASCADE) # 帖子发起者
-    detail = models.TextField(blank=True) # 内容
+    title = models.CharField(max_length=120) # 标题
+    content = models.TextField(blank=True) # 内容
     addTime = models.DateTimeField(auto_now_add=True) # 发布时间
     ding = models.IntegerField(default=0) # 点赞数
-    numComm = models.IntegerField(default=0) # 评论数
-    link = models.CharField(max_length=200, blank=True) # 关联链接
+    ding_user = models.TextField(default='[]')  # 点赞的人
+    numComm = models.IntegerField(default=0) # 评论数(热度）
+
+# 评论
+class Comment(models.Model):
+    id = models.BigAutoField(primary_key=True, auto_created=True)
+    forum = models.ForeignKey(Forum, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.CharField(max_length=400) # 评论内容
+    addTime = models.DateTimeField(auto_now_add=True) #评论时间
+    ding = models.IntegerField(default=0) # 赞数
+    ding_user = models.TextField(default='[]') # 点赞的人
+
+    def __str__(self):
+        return self.id
 
 # 管理
-class Admins(models.Model):
+class Admin(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=30)
     pwd = models.CharField(max_length=20)
@@ -118,17 +125,17 @@ class Admins(models.Model):
     addTime = models.DateTimeField(auto_now_add=True)
 
 # 反馈(供关联用户和管理员查看）
-class Feedbacks(models.Model):
+class Feedback(models.Model):
     id = models.BigAutoField(primary_key=True)
     addTime = models.DateTimeField(auto_now_add=True)
     description = models.TextField() #内容
     user = models.ForeignKey(User, on_delete=models.CASCADE) # 发布用户
-    admin = models.ForeignKey(Admins, on_delete=models.CASCADE) # 管理员
+    admin = models.ForeignKey(Admin, on_delete=models.CASCADE) # 管理员
     replyInformation = models.TextField(blank=True) # 回复信息
     checkStatus = models.BooleanField(default=False) # 处理状态
 
 # 用户会话 Session
-class Sessions(models.Model):
+class Session(models.Model):
     session_id = models.BigAutoField(primary_key=True)
     last_time = models.DateTimeField(auto_now_add=True)
     userAID = models.BigIntegerField() # 发起者
@@ -137,8 +144,14 @@ class Sessions(models.Model):
 
 class Message(models.Model):
     message_id = models.BigAutoField(primary_key=True)
-    from_session = models.ForeignKey(Sessions, on_delete=models.CASCADE)  # 所属于的session
+    from_session = models.ForeignKey(Session, on_delete=models.CASCADE)  # 所属于的session
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # 所属于的user
     time = models.DateTimeField(auto_now_add=True)
     description = models.TextField() # 信息内容
     last_message_id = models.BigIntegerField() # 上一条信息的id
+
+class History(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    search_history = models.CharField(max_length=120, default='[]') # '[]' 存储搜索历史, 使用最近时间的5个条目
+    book_history = models.CharField(max_length=250, default='[]') # '[]' 存储访问书籍历史，使用最近时间的10个条目

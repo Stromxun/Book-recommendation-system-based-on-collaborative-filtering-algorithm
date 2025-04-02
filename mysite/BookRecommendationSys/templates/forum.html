@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="icon" href="{% static 'img/icon/book.png' %}">
+    <title>动态-{{ post.title }}</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
+        }
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .navbar .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+        .navbar .nav-links a:hover {
+            text-decoration: none;
+        }
+        /* 搜索栏样式 */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            margin-left: 20px; /* 与导航链接的间距 */
+        }
+        .search-bar input[type="text"] {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 300px; /* 搜索框宽度 */
+        }
+        .search-bar button {
+            padding: 8px 12px;
+            background-color: #fff;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #007bff;
+        }
+        .search-bar button:hover {
+            background-color: #f0f0f0;
+        }
+        /* 页脚 */
+        .footer {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .post-container {
+            max-width: 800px;
+            margin: 80px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .post-title {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .post-time {
+            margin-left: auto;
+            font-size: 0.9em;
+        }
+
+        .post-body {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .like-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .like-btn:hover {
+            background: #0056b3;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            height: 100px;
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+
+        .reviews-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 80px auto;
+            padding: 30px;
+        }
+
+        .review-list {
+            margin-top: 20px;
+        }
+
+        .review-item {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .review-author {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .review-time {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .review-content {
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .review-like {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #666;
+        }
+
+        .review-like.active {
+            color: #ff4081;
+        }
+
+        .like-count {
+            font-size: 0.9em;
+        }
+
+        .no-reviews {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+
+        .write-review-btn {
+            background: #007bff;
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .write-review-btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<div class="navbar">
+    <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <div class="search-bar">
+        <form action="{% url 'base_search' %}" method="post">
+            {% csrf_token %}
+            <input type="text" placeholder="搜索书籍、书单或用户..." name="content">
+            <button type="submit">搜索</button>
+        </form>
+    </div>
+    <div class="nav-links">
+        {% if request.session.userID %}
+            <a href="{% url 'index' %}">首页</a>
+            <a href="{% url 'home' request.session.userID %}">我的空间</a>
+            <a href="#">私信</a>
+            <a href="{% url 'login_out' %}">退出登录</a>
+        {% else %}
+            <a href="{% url 'login' %}">登录</a>
+            <a href="{% url 'register' %}">注册</a>
+        {% endif %}
+    </div>
+</div>
+<!-- 主页内容 -->
+<div class="post-container">
+    <!-- 帖子主体 -->
+    <article class="post-content">
+        <h1 class="post-title">{{ post.title }}</h1>
+        <div class="post-meta">
+            <a href="{% url 'home' post.user.userID %}" class="author-info" style="text-decoration: none; color: black">
+                {% load static %}
+                <img src="{% static post.user.avatar_path %}" alt="头像" class="author-avatar">
+                <span class="author-name">{{ post.user.name }}</span>
+            </a>
+            <time class="post-time">{{ post.addTime|date:"Y-m-d H:i" }}</time>
+        </div>
+
+        <div class="post-body">
+            {{ post.content|linebreaks }}
+        </div>
+
+        {% load custom_filters %}
+        <div class="review-like">
+            {% load static %}
+            {% if request.session.userID %}
+                <a href=""><img src="{% static 'img/icon/heart_full.png' %}" alt="" height="20px" width="20px"></a><span class="like-count">{{ post.ding }}</span>
+            {% else %}
+                <a href="{% url 'login' %}" style="text-decoration: none">登录后点赞</a>
+            {% endif %}
+        </div>
+    </article>
+</div>
+<div class="reviews-section">
+    <div class="reviews-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin: 0">评论区</h2>
+        {% if request.session.userID %}
+            <a href="" style="text-decoration: none">
+                <button class="write-review-btn">✍️ 评论</button>
+            </a>
+        {% else %}
+            <a href="{% url 'login' %}" class="write-review-btn">🔑 登录后评论</a>
+        {% endif %}
+    </div>
+    <div class="review-list">
+        {% if reviews %}
+            {% for review in reviews %}
+                <div class="review-item">
+                    <!-- 修改后的评论头部结构 -->
+                    <div class="review-header">
+                        <div class="review-author-container">
+                        <span class="review-author">
+                            <a href="{% url 'home' review.user.userID %}" style="text-decoration: none; color: blue">
+                                {{ review.user.name }}
+                            </a>
+                        </span>
+                        </div>
+                        <span class="review-time">{{ review.create_time|date:"Y-m-d H:i" }}</span>
+                    </div>
+                    <div class="review-content">{{ review.content }}</div>
+                    {% load custom_filters %}
+                    <div class="review-like">
+                        {% load static %}
+                        {% if request.session.userID %}
+                            <a href="{% if review.zan_user|review_liked:request.session.userID %} {% url 'review_unlike' review.id%} {% else %} {% url 'review_like' review.id%} {% endif %}"><img src="{% if review.zan_user|review_liked:request.session.userID %} {% static 'img/icon/heart_full.png' %} {% else %} {% static 'img/icon/heart_empty.png' %} {% endif %}" alt="" height="20px" width="20px"></a><span class="like-count">{{ review.zan }}</span>
+                        {% else %}
+                            <a href="{% url 'login' %}" style="text-decoration: none">登录后点赞</a>
+                        {% endif %}
+                    </div>
+                    <div class="review-actions">
+                        <!-- 点赞部分保持不变... -->
+                        {% if request.session.userID == review.user.userID|stringformat:"s" %}
+                            <div class="delete-container">
+                                <form action="{% url 'review_delete' review.id %}" method="post"
+                                      onsubmit="return confirm('确定要删除这条评论吗？');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="delete-btn">
+                                        <img src="{% static 'img/icon/trash.png' %}" alt="删除" class="icon">
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-reviews">暂无评论，快来发表你的看法吧！</div>
+        {% endif %}
+    </div>
+</div>
+<!-- 页脚 -->
+<div class="footer">
+    欢迎您使用本系统，祝您拥有一个美好的阅读体验！
+</div>
+</body>
+</html>

@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="icon" href="{% static 'img/icon/book.png' %}">
+    <title>搜索--{{ content }}</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
+        }
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .navbar .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+        .navbar .nav-links a:hover {
+            text-decoration: none;
+        }
+        /* 搜索栏样式 */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            margin-left: 20px; /* 与导航链接的间距 */
+        }
+        .search-bar input[type="text"] {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 300px; /* 搜索框宽度 */
+        }
+        .search-bar button {
+            padding: 8px 12px;
+            background-color: #fff;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #007bff;
+        }
+        .search-bar button:hover {
+            background-color: #f0f0f0;
+        }
+        .main-content {
+            flex: 1;
+            padding: 100px 20px 60px; /* 下内边距预留footer空间 */
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        /* 页脚 */
+        .footer {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .list-switcher {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .list-switcher a {
+            display: inline-block;
+            padding: 8px 20px;
+            margin-right: 15px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s;
+        }
+
+        .list-switcher a.active {
+            color: #007bff;
+            background: #e3f2fd;
+            border-bottom: 2px solid #007bff;
+        }
+
+        .list-switcher a:hover {
+            background: #f5f5f5;
+        }
+
+        .book-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .book-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .book-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .main-content {
+            padding: 100px 20px 60px;
+        }
+
+        .search-section {
+            margin-bottom: 40px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            color: #2c3e50;
+            border-left: 4px solid #007bff;
+            padding-left: 12px;
+            margin: 0 0 20px;
+        }
+
+        .result-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+
+        .result-card {
+            display: flex;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .book-cover {
+            width: 80px;
+            height: 120px;
+            object-fit: cover;
+            margin-right: 15px;
+            border-radius: 4px;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .card-content {
+            flex: 1;
+        }
+
+        .card-content h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+        }
+
+        .card-content h3 a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+
+        .meta {
+            color: #666;
+            font-size: 0.9em;
+            margin: 0 0 8px;
+        }
+
+        .description {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .no-result {
+            color: #999;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .book-cover {
+            width: 80px;
+            height: 110px;
+            object-fit: cover;
+            margin-right: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .book-info {
+            flex-grow: 1;
+        }
+
+        .book-title-link {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .book-title-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .booklist-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .booklist-header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        .booklist-header h2 {
+            color: #333;
+            margin: 0 0 10px;
+        }
+
+        .booklist-stats {
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .booklist-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            transition: transform 0.2s;
+        }
+
+        .booklist-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-header {
+            margin-bottom: 15px;
+        }
+
+        .card-header h3 {
+            margin: 0 0 8px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .booklist-tag {
+            background: #f0f2f5;
+            color: #666;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .booklist-meta {
+            display: flex;
+            gap: 25px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .booklist-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .booklist-description {
+            color: #444;
+            font-size: 14px;
+            line-height: 1.6;
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .book-covers {
+            position: relative;
+            width: 120px;
+            height: 160px;
+            flex-shrink: 0;
+            margin-right: 20px;
+        }
+
+        .cover-item {
+            position: absolute;
+            width: 80px;
+            transition: transform 0.3s ease;
+        }
+
+        .cover-item:nth-child(1) {
+            left: 0;
+            z-index: 3;
+            transform: rotate(-3deg);
+        }
+
+        .cover-item:nth-child(2) {
+            left: 20px;
+            z-index: 2;
+            transform: rotate(2deg) translateY(10px);
+        }
+
+        .cover-item:nth-child(3) {
+            left: 40px;
+            z-index: 1;
+            transform: rotate(5deg) translateY(20px);
+        }
+
+        .cover-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+        }
+
+        /* 悬停动画 */
+        .book-covers:hover .cover-item:nth-child(1) {
+            transform: rotate(-5deg) translateX(-5px);
+        }
+
+        .book-covers:hover .cover-item:nth-child(2) {
+            transform: translateX(5px) rotate(5deg);
+        }
+
+        .book-covers:hover .cover-item:nth-child(3) {
+            transform: translateX(15px) rotate(10deg);
+        }
+
+        @media (max-width: 768px) {
+            .book-covers {
+                width: 100px;
+                height: 140px;
+                margin-right: 15px;
+            }
+
+            .cover-item img {
+                height: 100px;
+            }
+        }
+
+        /* 书单卡片布局调整 */
+        .booklist-card {
+            display: flex;          /* 启用flex布局 */
+            align-items: flex-start; /* 顶部对齐 */
+            gap: 20px;              /* 元素间距 */
+            padding: 20px;
+        }
+
+        /* 封面容器 */
+        .book-covers {
+            flex: 0 0 160px;        /* 固定宽度 */
+            min-width: 160px;      /* 防止收缩 */
+            position: relative;
+            height: 200px;         /* 根据图片高度调整 */
+        }
+
+        /* 信息容器 */
+        .booklist-info {
+            flex: 1;                /* 占据剩余空间 */
+            min-width: 0;           /* 防止内容溢出 */
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<div class="navbar">
+    <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <div class="search-bar">
+        <form action="{% url 'base_search' %}" method="post">
+            {% csrf_token %}
+            <input type="text" placeholder="搜索书籍、书单或用户..." name="content">
+            <button type="submit">搜索</button>
+        </form>
+    </div>
+    <div class="nav-links">
+        {% if request.session.userID %}
+            <a href="{% url 'index' %}">首页</a>
+            <a href="{% url 'home' request.session.userID %}">我的空间</a>
+            <a href="#">私信</a>
+            <a href="{% url 'login_out' %}">退出登录</a>
+        {% else %}
+            <a href="{% url 'login' %}">登录</a>
+            <a href="{% url 'register' %}">注册</a>
+        {% endif %}
+    </div>
+</div>
+<!-- 主页内容 -->
+{% load custom_filters %}
+<div class="main-content">
+    <!-- 新增选项卡 -->
+    <div class="list-switcher">
+        <a href="?type=book" class="{% if type == 'book' %}active{% endif %}">书籍</a>
+        <a href="?type=booklist" class="{% if type == 'booklist' %}active{% endif %}">书单</a>
+        <a href="?type=user" class="{% if type == 'user' %}active{% endif %}">用户</a>
+    </div>
+
+    {% if type == 'book' %}
+        <!-- 修改原有结果区块，添加类型标识 -->
+        <section class="search-section book-results" data-type="book">
+            <!-- 原有书籍结果内容 -->
+            <h2 class="section-title">书籍结果：共{{ count }}个</h2>
+            {% if books %}
+                {% for book in books %}
+                    <div class="book-item">
+                        <!-- 图书封面和基本信息 -->
+                        <a href="{% url 'book' book.ISBN %}">
+                            <img src="{{ book.imageURL }}" alt="{{ book.BookTitle }}封面" class="book-cover">
+                        </a>
+                        <div class="book-info">
+
+                            <h3><a href="{% url 'book' book.ISBN %}" class="book-title-link">{{ book.BookTitle }} </a></h3>
+                            <p>作者：{{ book.BookAuthor }} | 出版社：{{ book.Publisher }} | 出版年份：{{ book.YearOfPublication }}</p>
+                            <p>评分：{{ book.score }}</p>
+                        </div>
+
+                        <!-- 操作按钮 -->
+                        <div class="book-actions">
+                            <!-- 收藏按钮 -->
+                            {% load static %}
+                            {% load custom_filters %}
+                            {% if book.ISBN|to_int in favorites %} <img src="{% static "img/icon/heart0.svg" %}" alt="like" width="30px" height="30px">
+                            {% else %} <img src="{% static "img/icon/heart1.svg" %}" alt="unlike" width="30px" height="30px">
+                            {% endif %}
+                        </div>
+
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-result">暂无相关书籍</p>
+            {% endif %}
+        </section>
+        {% include '_pagination.html' with page_type='book' %}
+    {% elif type == 'booklist' %}
+        <section class="search-section list-results" data-type="list">
+            <!-- 原有书单结果内容 -->
+            <h2 class="section-title">书单结果：共{{ count }}个</h2>
+            {% if booklists %}
+                <!-- 书单列表 -->
+                <div class="booklist-items">
+                    {% for list in booklists %}
+                        {% if not list.is_public and not list.user.userID == request.session.userID|to_int%}
+                        {% else %}
+                            <div class="booklist-card">
+                                <!-- 左侧封面容器 -->
+                                <div class="book-covers">
+                                    {% for img in list.bookList|get_n:3 %}
+                                        <div class="cover-item" style="z-index: {{ 3|subtract:forloop.counter }};">
+                                            <img src="{{ img |default:'/static/default_cover.jpg' }}" alt="{{ book.BookTitle }}">
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- 右侧信息容器 -->
+                                <div class="booklist-info">
+                                    <div class="card-header">
+                                        <h3>
+                                            <a href="{% url 'booklist' list.bookListId %}" style="text-decoration: none; color: black;">{{ list.bookListTitle }}</a>
+                                            <span class="booklist-tag">{% if list.is_public %}公开{% else %}私有{% endif %}书单</span>
+                                        </h3>
+                                        <div class="booklist-meta">
+                                            <span class="followers">👥 {{ list.fans }}人关注</span>
+                                            <span class="update-time">🕒 {{ list.create_time|date:"Y-m-d H:i" }}发布</span>
+                                            <span class="progress">{{ list.bookList | len_book_list }}本</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="booklist-description">
+                                            {{ list.description|truncatechars:50 }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-result">暂无相关书单</p>
+            {% endif %}
+        </section>
+        {% include '_pagination.html' with page_type='booklist' %}
+    {% else %}
+        <section class="search-section user-results" data-type="user">
+            <!-- 原有用户结果内容 -->
+            <h2 class="section-title">用户结果：共{{ count }}个</h2>
+            {% if users %}
+                <div class="result-grid">
+                    {% for user in users %}
+                        <div class="result-card user-card">
+                            {% load static %}
+                            <img src="{% static user.avatar_path %}" alt="{{ user.name }}" class="user-avatar">
+                            <div class="card-content">
+                                <h3><a href="{% url 'home' user.userID %}">{{ user.name }}</a></h3>
+                                <p class="meta">粉丝：{{ user.fans }} 赞数：{{ user.ding }}</p>
+                                <p class="description">{{ user.sign|truncatechars:15 }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-result">暂无相关用户</p>
+            {% endif %}
+        </section>
+        {% include '_pagination.html' with page_type='user' %}
+    {% endif %}
+</div>
+
+<!-- 页脚 -->
+<div class="footer">
+    欢迎您使用本系统，祝您拥有一个美好的阅读体验！
+</div>
+</body>
+</html>

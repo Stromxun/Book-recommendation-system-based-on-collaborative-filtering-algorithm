@@ -48,3 +48,8 @@ def generate_star(score):
             star += "3"
         score -= 2
     return star
+
+@register.filter(name='review_liked')
+def review_liked(users, userID):
+    userList = get_id_list_from_str(users)
+    return to_int(userID) in userList

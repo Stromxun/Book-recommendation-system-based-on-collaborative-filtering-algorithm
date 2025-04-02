@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="icon" href="{% static 'img/icon/book.png' %}">
+    <title>写评论</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
+        }
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .navbar .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+        .navbar .nav-links a:hover {
+            text-decoration: none;
+        }
+        /* 搜索栏样式 */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            margin-left: 20px; /* 与导航链接的间距 */
+        }
+        .search-bar input[type="text"] {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 300px; /* 搜索框宽度 */
+        }
+        .search-bar button {
+            padding: 8px 12px;
+            background-color: #fff;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #007bff;
+        }
+        .search-bar button:hover {
+            background-color: #f0f0f0;
+        }
+        /* 页脚 */
+        .footer {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        /* 新增评论相关样式 */
+        .comment-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 800px;
+        }
+
+        .comment-submit-btn {
+            background: #007bff;
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+        }
+        .main-content {
+            padding: 5px 10px;
+            margin: 70px auto 20px; /* 修改上边距 */
+            max-width: 1200px;
+            width: 100%;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            flex:1;
+            box-sizing: border-box;
+        }
+        /* 书籍项样式 */
+        .book-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .book-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .main-content {
+            padding: 100px 20px 80px; /* 增加底部内边距 */
+        }
+
+        .book-item {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 30px;
+        }
+
+        .book-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .book-cover:hover {
+            transform: scale(1.03);
+        }
+
+        .book-info {
+            padding: 10px 0;
+        }
+
+        .book-title-link {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .book-title-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .book-meta {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .book-meta span {
+            margin-right: 15px;
+        }
+
+        .rating-stars {
+            display: inline-flex;
+            gap: 3px;
+        }
+
+        .comment-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 50px 30px;
+            margin: 40px auto;
+        }
+
+        .comment-form textarea {
+            width: 95%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            line-height: 1.6;
+            min-height: 150px;
+            transition: border-color 0.3s ease;
+        }
+
+        .comment-form textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .comment-submit-btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            padding: 10px 30px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .comment-submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.2);
+        }
+
+        .login-prompt {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px dashed #dee2e6;
+        }
+
+        .login-prompt a {
+            color: #007bff;
+            font-weight: 500;
+        }
+
+        /* 响应式优化 */
+        @media (max-width: 768px) {
+            .book-item {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .book-cover {
+                height: 200px;
+            }
+
+            .navbar {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .search-bar input[type="text"] {
+                width: 200px;
+            }
+
+            .rating-input-group {
+                margin: 20px 0;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .rating-input-group label {
+                font-weight: 500;
+                color: #2c3e50;
+                white-space: nowrap;
+            }
+
+            .score-input {
+                padding: 10px 15px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                width: 120px;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+            }
+
+            .score-input:focus {
+                border-color: #007bff;
+                box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+                outline: none;
+            }
+
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<div class="navbar">
+    <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <div class="search-bar">
+        <form action="{% url 'base_search' %}" method="post">
+            {% csrf_token %}
+            <input type="text" placeholder="搜索书籍、书单或用户..." name="content">
+            <button type="submit">搜索</button>
+        </form>
+    </div>
+    <div class="nav-links">
+        {% if request.session.userID %}
+            <a href="{% url 'index' %}">首页</a>
+            <a href="{% url 'home' request.session.userID %}">我的空间</a>
+            <a href="#">私信</a>
+            <a href="{% url 'login_out' %}">退出登录</a>
+        {% else %}
+            <a href="{% url 'login' %}">登录</a>
+            <a href="{% url 'register' %}">注册</a>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- 主页内容 -->
+<div class="main-content">
+    <!-- 书籍详细信息 -->
+    <div class="book-item">
+        <a href="{% url 'book' book.ISBN %}">
+            <img src="{{ book.imageURL }}" alt="{{ book.BookTitle }}封面" class="book-cover">
+        </a>
+        <div class="book-info">
+            <h3>
+                <a href="{% url 'book' book.ISBN %}" class="book-title-link">
+                    {{ book.BookTitle }}
+                </a>
+            </h3>
+            <div class="book-meta">
+                <span>作者： {{ book.BookAuthor }}</span>
+                <span>出版社： {{ book.Publisher }}</span>
+                <span>出版年份： {{ book.YearOfPublication }}</span>
+            </div>
+            <div class="rating">
+                <div class="rating-stars">
+                    {% load custom_filters %}
+                    {% for star in book.score|generate_star %}
+                        {% if star == '1' %}
+                            <img src="{% static 'img/icon/star_full.png' %}" width="12" height="12" alt="★">
+                        {% elif star == '2'%}
+                            <img src="{% static 'img/icon/star_half.png' %}" width="12" height="12" alt="★">
+                        {% else %}
+                            <img src="{% static 'img/icon/star_empty.png' %}" width="12" height="12" alt="☆">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="score">{{ book.score }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 优化后的评论区域 -->
+    <div class="comment-section">
+        <h2 style="margin-top:0;color:#2c3e50;">✍️ 发表书评</h2>
+        {% if request.session.userID %}
+            <form class="comment-form" method="POST" action="{% url 'review_write' book.ISBN %}">
+                {% csrf_token %}
+                <textarea name="comment"
+                          placeholder="分享你的阅读体验..."
+                          required></textarea>
+                <div class="rating-input-group">
+                    <label for="score-input">评分（0-10分）：</label>
+                    <input type="number"
+                           id="score-input"
+                           name="star"
+                           min="0"
+                           max="10"
+                           step="0.1"
+                           required
+                           placeholder="4.5"
+                           class="score-input">
+                </div>
+                <div style="text-align:right;">
+                    <button type="submit" class="comment-submit-btn">
+                        🚀 发布书评
+                    </button>
+                </div>
+            </form>
+        {% else %}
+            <div class="login-prompt">
+                请<a href="{% url 'login' %}">登录</a>后参与讨论，与书友分享你的见解
+            </div>
+        {% endif %}
+    </div>
+</div>
+<!-- 页脚 -->
+<div class="footer">
+    欢迎您使用本系统，祝您拥有一个美好的阅读体验！
+</div>
+</body>
+</html>

@@ -488,9 +488,10 @@
     <div class="logo"><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
     <!-- 搜索栏 -->
     <div class="search-bar">
-        <form action="" method="post">
-            <input type="text" placeholder="搜索书籍或用户...">
-            <button>搜索</button>
+        <form action="{% url 'base_search' %}" method="post">
+            {% csrf_token %}
+            <input type="text" placeholder="搜索书籍、书单或用户..." name="content">
+            <button type="submit">搜索</button>
         </form>
     </div>
     <div class="nav-links">
@@ -503,7 +504,7 @@
 
 <!-- 侧边栏 -->
 <div class="sidebar">
-    <h3>阅读空间</h3>
+    <h3><a href="{% url 'home' goal.userID%}" style="text-decoration: none; color: #007bff">阅读空间</a></h3>
     <ul>
         <li><a href="#">空间动态</a></li>
         <li><a href="{% url 'up' goal.userID%}">{% if goal.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
@@ -523,7 +524,8 @@
             <div class="header-title-bar">  <!-- 新增标题容器 -->
                 <h2>{% if list_type == 'my' %}{{ goal.name }}的书单{% else %} {{ goal.name }}关注的书单 {% endif %}</h2>
                 {% if request.session.userID|to_int == goal.userID and list_type == 'my' %}
-                    <button class="new-booklist-btn" onclick="location.href='{% url 'create_bookList' %}'">
+                    <button class="new-booklist-btn"
+                            onclick="if(confirm('确定要创建新书单吗？')){location.href='{% url 'create_bookList' %}'}">
                         ＋ 新增书单
                     </button>
                 {% endif %}
@@ -538,49 +540,49 @@
             {% for list in book_lists %}
                 {% if not list.is_public and not list.user.userID == request.session.userID|to_int%}
                 {% else %}
-                <div class="booklist-card">
-                    <!-- 左侧封面容器 -->
-                    <div class="book-covers">
-                        {% for img in list.bookList|get_n:3 %}
-                            <div class="cover-item" style="z-index: {{ 3|subtract:forloop.counter }};">
-                                <img src="{{ img |default:'/static/default_cover.jpg' }}" alt="{{ book.BookTitle }}">
-                            </div>
-                        {% endfor %}
-                    </div>
+                    <div class="booklist-card">
+                        <!-- 左侧封面容器 -->
+                        <div class="book-covers">
+                            {% for img in list.bookList|get_n:3 %}
+                                <div class="cover-item" style="z-index: {{ 3|subtract:forloop.counter }};">
+                                    <img src="{{ img |default:'/static/default_cover.jpg' }}" alt="{{ book.BookTitle }}">
+                                </div>
+                            {% endfor %}
+                        </div>
 
-                    <!-- 右侧信息容器 -->
-                    <div class="booklist-info">
-                        <div class="card-header">
-                            <h3>
-                                <a href="{% url 'booklist' list.bookListId %}" style="text-decoration: none">{{ list.bookListTitle }}</a>
-                                <span class="booklist-tag">{% if list.is_public %}公开{% else %}私有{% endif %}书单</span>
-                            </h3>
-                            <div class="booklist-meta">
-                                <span class="followers">👥 {{ list.fans }}人关注</span>
-                                <span class="update-time">🕒 {{ list.create_time|date:"Y-m-d H:i" }}发布</span>
-                                <span class="progress">{{ list.bookList | len_book_list }}本</span>
+                        <!-- 右侧信息容器 -->
+                        <div class="booklist-info">
+                            <div class="card-header">
+                                <h3>
+                                    <a href="{% url 'booklist' list.bookListId %}" style="text-decoration: none; color: black;">{{ list.bookListTitle }}</a>
+                                    <span class="booklist-tag">{% if list.is_public %}公开{% else %}私有{% endif %}书单</span>
+                                </h3>
+                                <div class="booklist-meta">
+                                    <span class="followers">👥 {{ list.fans }}人关注</span>
+                                    <span class="update-time">🕒 {{ list.create_time|date:"Y-m-d H:i" }}发布</span>
+                                    <span class="progress">{{ list.bookList | len_book_list }}本</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="booklist-description">
+                                    {{ list.description|truncatechars:50 }}
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <div class="booklist-description">
-                                {{ list.description|truncatechars:50 }}
-                            </div>
-                        </div>
-                    </div>
 
-                    {% if request.session.userID|to_int == list.user.userID %}
-                        <div class="card-actions">
-                            <form method="get" action="{% url 'update_bookList' list.bookListId%}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-edit">✏️</button>
-                            </form>
-                            <form method="get" action="">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-delete">🗑️</button>
-                            </form>
-                        </div>
-                    {% endif %}
-                </div>
+                        {% if request.session.userID|to_int == list.user.userID %}
+                            <div class="card-actions">
+                                <form method="get" action="{% url 'update_bookList' list.bookListId%}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-edit">✏️</button>
+                                </form>
+                                <form method="get" action="{% url 'delete_bookList' list.bookListId%}" onsubmit="return confirm('确定删除该书单吗？');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-delete">🗑️</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
                 {% endif %}
             {% endfor %}
         </div>

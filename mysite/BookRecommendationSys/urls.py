@@ -17,18 +17,29 @@ urlpatterns = [
     path("booklist/<int:bookListId>/add_to_book_list", views.add_to_book_list, name="add_to_book_list"),
     path("booklist/<int:bookListId>/remove_from_book_list", views.remove_from_book_list, name="remove_from_book_list"),
 
+    # 书论
+    path("review/<str:ISBN>/write", views.review_write, name="review_write"),
+    path("review/<int:review_id>/delete", views.review_delete, name="review_delete"),
+    path("review/<int:review_id>/like", views.review_like, name="review_like"),
+    path("review/<int:review_id>/unlike", views.review_unlike, name="review_unlike"),
+
+    # 搜索
+    path("search/", views.base_search, name="base_search"),
+    path("search/<str:content>/", views.search, name="search"),
+
     # 增删书单
     path("booklist/create_bookList", views.create_bookList, name="create_bookList"),
     path("booklist/<int:bookListId>/delete_bookList", views.delete_bookList, name="delete_bookList"),
     path("booklist/<int:bookListId>/update_bookList", views.update_bookList, name="update_bookList"),
+
     # 用户空间
     path("<int:goal_id>/home/", views.home, name="home"),
     path("<int:goal_id>/up/", views.up, name="up"),
     path("<int:goal_id>/follow/", views.follow, name="follow"),
     path("<int:goal_id>/unfollow/", views.unfollow, name="unfollow"),
     path("<int:goal_id>/booklist/", views.home_book_list, name="home_book_list"),
-    path("<int:goal_id>/setting", views.home_setting, name="home_setting"),
-
+    path("<int:goal_id>/setting/", views.home_setting, name="home_setting"),
+    path("forum/<int:forum_id>/", views.forum, name="forum"),
     # 登录部分
     path('login/', views.login, name='login'),
 
