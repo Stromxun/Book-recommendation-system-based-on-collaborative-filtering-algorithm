@@ -383,3 +383,9 @@ def add_data_about_book(request):
 def forum(request, forum_id): # 帖子
     f = Forum.objects.get(id=forum_id)
     return render(request, 'forum.html', {'post': f})
+
+
+def home_forum(request, goal_id):
+    goal = User.objects.get(userID=goal_id)
+    forums = Forum.objects.filter(user=goal)
+    return render(request, 'home_forum.html', {'goal': goal, 'forums': forums})

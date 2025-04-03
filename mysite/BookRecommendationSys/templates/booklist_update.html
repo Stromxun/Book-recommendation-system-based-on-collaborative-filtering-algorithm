@@ -391,7 +391,7 @@
     <div class="nav-links">
         <a href="{% url 'index' %}">首页</a>
         <a href="{% url 'home' request.session.userID%}">我的空间</a>
-        <a href="#">私信</a>
+        <a href="#">反馈</a>
         <a href="{% url 'login_out' %}">退出登录</a>
     </div>
 </div>
@@ -400,7 +400,7 @@
 <div class="sidebar">
     <h3>阅读空间</h3>
     <ul>
-        <li><a href="#">空间动态</a></li>
+        <li><a href="{% url 'home_forum' goal.userID %}">空间动态</a></li>
         <li><a href="{% url 'up' booklist.user.userID%}">{% if booklist.user.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
         <li><a href="{% url 'home_book_list' booklist.user.userID %}">书单</a></li>
         <li><a href="#">资料设置</a></li>

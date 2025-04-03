@@ -39,6 +39,7 @@ urlpatterns = [
     path("<int:goal_id>/unfollow/", views.unfollow, name="unfollow"),
     path("<int:goal_id>/booklist/", views.home_book_list, name="home_book_list"),
     path("<int:goal_id>/setting/", views.home_setting, name="home_setting"),
+    path("<int:goal_id>/forum/", views.home_forum, name="home_forum"),
     path("forum/<int:forum_id>/", views.forum, name="forum"),
     # 登录部分
     path('login/', views.login, name='login'),

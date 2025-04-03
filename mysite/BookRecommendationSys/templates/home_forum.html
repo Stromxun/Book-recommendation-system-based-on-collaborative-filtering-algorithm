@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <link rel="icon" href="{% static 'img/icon/book.png' %}">
-    <title>{{ goal.name }}的书单</title>
+    <title>{{ goal.name }}的空间动态</title>
     <style>
         /* 全局样式 */
         body {
@@ -478,6 +478,40 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0,123,255,0.3);
         }
+
+        .booklist-meta {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* 热度计数样式 */
+        .hot-count {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #ff6b6b;
+        }
+
+        /* 评论数样式 */
+        .comments-count {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #4ecdc4;
+        }
+
+        /* 空状态动画 */
+        .no-forums {
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -517,66 +551,50 @@
     <div class="booklist-container">
         <!-- 书单标题区 -->
         <div class="booklist-header">
-            <div class="list-switcher">
-                <a href="?type=my" class="{% if list_type == 'my' %}active{% endif %}">{% if request.session.userID|to_int == goal.userID %}我{% else %}TA{% endif %}的书单({{ my_count }})</a>
-                <a href="?type=follow" class="{% if list_type == 'follow' %}active{% endif %}">关注的书单 ({{ follow_count }})</a>
-            </div>
             <div class="header-title-bar">  <!-- 新增标题容器 -->
-                <h2>{% if list_type == 'my' %}{{ goal.name }}的书单{% else %} {{ goal.name }}关注的书单 {% endif %}</h2>
-                {% if request.session.userID|to_int == goal.userID and list_type == 'my' %}
+                <h2> {{ goal.name }}的动态 </h2>
+                {% if request.session.userID|to_int == goal.userID %}
                     <button class="new-booklist-btn"
-                            onclick="if(confirm('确定要创建新书单吗？')){location.href='{% url 'create_bookList' %}'}">
-                        ＋ 新增书单
+                            onclick="if(confirm('确定要写新的动态吗？')){location.href=''}">
+                        ＋ 写动态
                     </button>
                 {% endif %}
-            </div>
-            <div class="booklist-stats">
-                <span>共{{ book_lists|length }}个书单</span>
             </div>
         </div>
 
         <!-- 书单列表 -->
         <div class="booklist-items">
-            {% for list in book_lists %}
-                {% if not list.is_public and not list.user.userID == request.session.userID|to_int%}
+            {% for forum in forums %}
+                {% if not forum.is_public and not list.user.userID == request.session.userID|to_int%}
                 {% else %}
                     <div class="booklist-card">
-                        <!-- 左侧封面容器 -->
-                        <div class="book-covers">
-                            {% for img in list.bookList|get_n:3 %}
-                                <div class="cover-item" style="z-index: {{ 3|subtract:forloop.counter }};">
-                                    <img src="{{ img |default:'/static/default_cover.jpg' }}" alt="{{ book.BookTitle }}">
-                                </div>
-                            {% endfor %}
-                        </div>
-
                         <!-- 右侧信息容器 -->
                         <div class="booklist-info">
                             <div class="card-header">
                                 <h3>
-                                    <a href="{% url 'booklist' list.bookListId %}" style="text-decoration: none; color: black;">{{ list.bookListTitle }}</a>
-                                    <span class="booklist-tag">{% if list.is_public %}公开{% else %}私有{% endif %}书单</span>
+                                    <a href="{% url 'forum' forum.id %}" style="text-decoration: none; color: black;">{{ forum.title }}</a>
+                                    <span class="booklist-tag">{% if forum.is_public %}公开{% else %}私有{% endif %}动态</span>
                                 </h3>
                                 <div class="booklist-meta">
-                                    <span class="followers">👥 {{ list.fans }}人关注</span>
-                                    <span class="update-time">🕒 {{ list.create_time|date:"Y-m-d H:i" }}发布</span>
-                                    <span class="progress">{{ list.bookList | len_book_list }}本</span>
+                                    <span class="update-time">🕒 {{ forum.addTime|date:"Y-m-d H:i" }}发布</span>
+                                    <span class="hot-count">🔥 {{ forum.ding }} 热度</span>  <!-- 新增热度显示 -->
+                                    <span class="comments-count">💬 {{ forum.numComm }} 评论</span>  <!-- 新增评论数 -->
                                 </div>
                             </div>
                             <div class="card-body">
                                 <div class="booklist-description">
-                                    {{ list.description|truncatechars:50 }}
+                                    {{ forum.content|truncatechars:50 }}
                                 </div>
                             </div>
                         </div>
 
-                        {% if request.session.userID|to_int == list.user.userID %}
+                        {% if request.session.userID|to_int == forum.user.userID %}
                             <div class="card-actions">
-                                <form method="get" action="{% url 'update_bookList' list.bookListId%}">
+                                <form method="get" action="">
                                     {% csrf_token %}
                                     <button type="submit" class="btn-edit">✏️</button>
                                 </form>
-                                <form method="get" action="{% url 'delete_bookList' list.bookListId%}" onsubmit="return confirm('确定删除该书单吗？');">
+                                <form method="get" action="" onsubmit="return confirm('确定删除该书单吗？');">
                                     {% csrf_token %}
                                     <button type="submit" class="btn-delete">🗑️</button>
                                 </form>
@@ -584,6 +602,10 @@
                         {% endif %}
                     </div>
                 {% endif %}
+            {% empty %}  <!-- 新增空状态提示 -->
+                <div class="no-forums" style="text-align: center; padding: 40px; color: #666;">
+                    <p style="margin-top: 20px; font-size: 16px;">暂时没有动态哦，{% if request.session.userID|to_int == goal.userID %}快去<a style="color: #007bff;">发布第一条动态</a>吧！{% else %}该用户还没有发布动态{% endif %}</p>
+                </div>
             {% endfor %}
         </div>
     </div>

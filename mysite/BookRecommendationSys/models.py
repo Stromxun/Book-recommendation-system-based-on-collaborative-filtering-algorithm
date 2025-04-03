@@ -102,6 +102,7 @@ class Forum(models.Model):
     ding = models.IntegerField(default=0) # 点赞数
     ding_user = models.TextField(default='[]')  # 点赞的人
     numComm = models.IntegerField(default=0) # 评论数(热度）
+    is_public = models.BooleanField(default=True)  # 是否公开
 
 # 评论
 class Comment(models.Model):
@@ -133,22 +134,6 @@ class Feedback(models.Model):
     admin = models.ForeignKey(Admin, on_delete=models.CASCADE) # 管理员
     replyInformation = models.TextField(blank=True) # 回复信息
     checkStatus = models.BooleanField(default=False) # 处理状态
-
-# 用户会话 Session
-class Session(models.Model):
-    session_id = models.BigAutoField(primary_key=True)
-    last_time = models.DateTimeField(auto_now_add=True)
-    userAID = models.BigIntegerField() # 发起者
-    userBID = models.BigIntegerField() # 接受者
-    last_message_id = models.BigIntegerField()  # 该会话最后一条信息的id
-
-class Message(models.Model):
-    message_id = models.BigAutoField(primary_key=True)
-    from_session = models.ForeignKey(Session, on_delete=models.CASCADE)  # 所属于的session
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # 所属于的user
-    time = models.DateTimeField(auto_now_add=True)
-    description = models.TextField() # 信息内容
-    last_message_id = models.BigIntegerField() # 上一条信息的id
 
 class History(models.Model):
     id = models.BigAutoField(primary_key=True)
