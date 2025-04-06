@@ -382,10 +382,84 @@ def add_data_about_book(request):
 
 def forum(request, forum_id): # 帖子
     f = Forum.objects.get(id=forum_id)
-    return render(request, 'forum.html', {'post': f})
+    comments = Comment.objects.filter(forum=f).order_by('-ding')
+    return render(request, 'forum.html', {'post': f, 'reviews': comments})
 
 
 def home_forum(request, goal_id):
     goal = User.objects.get(userID=goal_id)
-    forums = Forum.objects.filter(user=goal)
+    forums = Forum.objects.filter(user=goal).order_by('-addTime')
     return render(request, 'home_forum.html', {'goal': goal, 'forums': forums})
+
+
+def forum_create(request, goal_id):
+    user = User.objects.get(userID=goal_id)
+    if request.method == "POST":
+        title = request.POST['title']
+        content = request.POST['content']
+        privacy = request.POST['privacy'] == "public"
+        forum = Forum(user=user, title=title, content=content, is_public=privacy)
+        forum.save()
+        return HttpResponseRedirect('/{0}/forum'.format(user.userID))
+    return render(request, 'forum_write.html', {'goal':user})
+
+
+def forum_update(request, forum_id):
+    forum = Forum.objects.get(id=forum_id)
+    if request.method == "POST":
+        forum.title = request.POST['title']
+        forum.content = request.POST['content']
+        forum.is_public = (request.POST['privacy'] == "public")
+        forum.save()
+        return HttpResponseRedirect('/{0}/forum'.format(forum.user.userID))
+    return render(request, 'forum_update.html', {'forum':forum})
+
+
+def forum_delete(request, forum_id):
+    forum = Forum.objects.get(id=forum_id)
+    userID = forum.user.userID
+    forum.delete()
+    return HttpResponseRedirect('/{0}/forum'.format(userID))
+
+
+def forum_write_comment(request, forum_id):
+    forum = Forum.objects.get(id=forum_id)
+    if request.method == "POST":
+        content = request.POST['comment']
+        user = User.objects.get(userID=int(request.session['userID']))
+        comment = Comment(forum=forum, content=content,user=user)
+        forum.numComm += 1
+        comment.save()
+        forum.save()
+        return HttpResponseRedirect('/forum/{0}'.format(forum.id))
+    return render(request, 'forum_comment_write.html', {'post': forum})
+
+def forum_delete_comment(request, comment_id):
+    comment = Comment.objects.get(id=comment_id)
+    forum = Forum.objects.get(id=comment.forum.id)
+    comment.delete()
+    forum.numComm -= 1
+    forum.save()
+    return HttpResponseRedirect('/forum/{0}'.format(forum.id))
+
+
+def forum_like(request, forum_id):
+    forum_add_like(request, Forum.objects.get(id=forum_id))
+    return HttpResponseRedirect('/forum/{0}'.format(forum_id))
+
+
+def forum_unlike(request, forum_id):
+    forum_remove_like(request, Forum.objects.get(id=forum_id))
+    return HttpResponseRedirect('/forum/{0}'.format(forum_id))
+
+
+def comment_like(request, comment_id):
+    comment = Comment.objects.get(id=comment_id)
+    forum_add_like(request, comment)
+    return HttpResponseRedirect('/forum/{0}'.format(comment.forum.id))
+
+
+def comment_unlike(request, comment_id):
+    comment = Comment.objects.get(id=comment_id)
+    forum_remove_like(request, comment)
+    return HttpResponseRedirect('/forum/{0}'.format(comment.forum.id))

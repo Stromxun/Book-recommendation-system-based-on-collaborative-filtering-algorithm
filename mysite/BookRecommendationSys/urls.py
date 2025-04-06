@@ -40,7 +40,16 @@ urlpatterns = [
     path("<int:goal_id>/booklist/", views.home_book_list, name="home_book_list"),
     path("<int:goal_id>/setting/", views.home_setting, name="home_setting"),
     path("<int:goal_id>/forum/", views.home_forum, name="home_forum"),
+    path("<int:goal_id>/forum/create/", views.forum_create, name="forum_create"),
     path("forum/<int:forum_id>/", views.forum, name="forum"),
+    path("forum/<int:forum_id>/update/", views.forum_update, name="forum_update"),
+    path("forum/<int:forum_id>/delete/", views.forum_delete, name="forum_delete"),
+    path("forum/<int:forum_id>/like/", views.forum_like, name="forum_like"),
+    path("forum/<int:forum_id>/unlike/", views.forum_unlike, name="forum_unlike"),
+    path("forum/<int:forum_id>/write_comment/", views.forum_write_comment, name="forum_write_comment"),
+    path("forum_comment/<int:comment_id>/delete_comment/", views.forum_delete_comment, name="forum_delete_comment"),
+    path("comment/<int:comment_id>/like", views.comment_like, name="comment_like"),
+    path("comment/<int:comment_id>/unlike", views.comment_unlike, name="comment_unlike"),
     # 登录部分
     path('login/', views.login, name='login'),
 

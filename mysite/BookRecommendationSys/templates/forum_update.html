@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="icon" href="{% static 'img/icon/book.png' %}">
+    <title>动态-修改</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
+        }
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .navbar .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+        .navbar .nav-links a:hover {
+            text-decoration: none;
+        }
+
+        /* 搜索栏样式 */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            margin-left: 20px; /* 与导航链接的间距 */
+        }
+        .search-bar input[type="text"] {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 300px; /* 搜索框宽度 */
+        }
+        .search-bar button {
+            padding: 8px 12px;
+            background-color: #fff;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #007bff;
+        }
+        .search-bar button:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 250px;
+            background-color: #fff;
+            height: calc(100vh - 60px);
+            position: fixed;
+            top: 60px;
+            left: 0;
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .sidebar h3 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #007bff;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            margin: 15px 0;
+        }
+        .sidebar ul li a {
+            color: #333;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .sidebar ul li a:hover {
+            color: #007bff;
+        }
+
+        /* 主体内容 */
+        .main-content {
+            flex: 1;
+            padding: 100px 20px 60px; /* 下内边距预留footer空间 */
+            max-width: 1200px;
+            margin: auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .profile-header img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #007bff;
+            margin-bottom: 10px;
+        }
+        .profile-header h2 {
+            margin: 10px 0 5px;
+            font-size: 24px;
+        }
+        .profile-header p {
+            margin: 0;
+            font-size: 14px;
+            color: #777;
+        }
+        .profile-stats div {
+            text-align: center;
+        }
+        .profile-stats div span {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .profile-stats div p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #777;
+        }
+        .profile-details h3 {
+            margin: 0 0 15px;
+            font-size: 18px;
+            color: #333;
+        }
+        .profile-details p {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.5;
+        }
+        .profile-actions button {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .profile-actions button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 页脚 */
+        .footer {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        /* 表单容器 */
+        .form-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 50px 50px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 表单标题 */
+        .form-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 15px;
+        }
+
+        /* 表单元素组 */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        /* 输入标签 */
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        /* 文本输入框 */
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        /* 内容输入框 */
+        .form-textarea {
+            height: 200px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        /* 隐私设置 */
+        .privacy-setting {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .privacy-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #007bff;
+        }
+
+        /* 提交按钮 */
+        .submit-btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            float: right;
+        }
+
+        .submit-btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .form-container {
+                margin: 60px 15px;
+                padding: 20px;
+            }
+
+            .form-title {
+                font-size: 20px;
+            }
+
+            .submit-btn {
+                width: 100%;
+                float: none;
+            }
+        }
+
+        .edit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .back-link {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 导航栏 -->
+<div class="navbar">
+    <div class="logo"><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <!-- 搜索栏 -->
+    <div class="search-bar">
+        <form action="{% url 'base_search' %}" method="post">
+            {% csrf_token %}
+            <input type="text" placeholder="搜索书籍、书单或用户..." name="content">
+            <button type="submit">搜索</button>
+        </form>
+    </div>
+    <div class="nav-links">
+        <a href="{% url 'index' %}">首页</a>
+        <a href="{% url 'home' request.session.userID%}">我的空间</a>
+        <a href="#">反馈</a>
+        <a href="{% url 'login_out' %}">退出登录</a>
+    </div>
+</div>
+{% load custom_filters %}
+<!-- 侧边栏 -->
+<div class="sidebar">
+    <h3>阅读空间</h3>
+    <ul>
+        <li><a href="{% url 'home_forum' forum.user.userID %}">空间动态</a></li>
+        <li><a href="{% url 'up' forum.user.userID%}">{% if forum.user.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
+        <li><a href="{% url 'home_book_list' forum.user.userID %}">书单</a></li>
+        {% if request.session.userID|to_int == forum.user.userID%} <li><a href="{% url 'home_setting' forum.user.userID %}">资料设置</a></li> {% endif %}
+    </ul>
+</div>
+
+<div class="main-content">
+    <div class="form-container">
+        <div class="edit-header">
+            <h2 class="form-title">编辑动态</h2>
+            <a href="{% url 'home_forum' request.session.userID %}" class="back-link">
+                ← 返回动态详情
+            </a>
+        </div>
+
+        <form method="post" action="{% url 'forum_update' forum.id %}" onsubmit="return confirm('确认保存修改吗！')">
+            {% csrf_token %}
+
+            <!-- 标题输入 -->
+            <div class="form-group">
+                <label class="form-label" for="title">动态标题</label>
+                <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        class="form-input"
+                        value="{{ forum.title }}"
+                        maxlength="50"
+                        required
+                >
+            </div>
+
+            <!-- 内容输入 -->
+            <div class="form-group">
+                <label class="form-label" for="content">动态内容</label>
+                <textarea
+                        id="content"
+                        name="content"
+                        class="form-input form-textarea"
+                        maxlength="500"
+                        required
+                >{{ forum.content }}</textarea>
+            </div>
+
+            <!-- 隐私设置 -->
+            <div class="form-group">
+                <label class="form-label">可见范围</label>
+                <div class="privacy-setting">
+                    <label class="privacy-option">
+                        <input
+                                type="radio"
+                                name="privacy"
+                                value="public"
+                                {% if forum.is_public %}checked{% endif %}
+                        >
+                        <span>公开（所有人可见）</span>
+                    </label>
+                    <label class="privacy-option">
+                        <input
+                                type="radio"
+                                name="privacy"
+                                value="private"
+                                {% if not forum.is_public %}checked{% endif %}
+                        >
+                        <span>仅自己可见</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 操作按钮组 -->
+            <div style="display: flex; justify-content: flex-end; gap: 15px;">
+                <a href="{% url 'home_forum' request.session.userID %}" class="submit-btn"
+                   style="background: #6c757d; text-decoration: none; line-height: normal;">
+                    取消
+                </a>
+                <button type="submit" class="submit-btn">保存修改</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- 页脚 -->
+<div class="footer">
+    欢迎您使用本系统，祝您拥有一个美好的阅读体验！
+</div>
+
+</body>
+</html>

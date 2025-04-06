@@ -555,7 +555,7 @@
                 <h2> {{ goal.name }}的动态 </h2>
                 {% if request.session.userID|to_int == goal.userID %}
                     <button class="new-booklist-btn"
-                            onclick="if(confirm('确定要写新的动态吗？')){location.href=''}">
+                            onclick="if(confirm('确定要写新的动态吗？')){location.href='{% url 'forum_create' goal.userID %}'}">
                         ＋ 写动态
                     </button>
                 {% endif %}
@@ -565,7 +565,7 @@
         <!-- 书单列表 -->
         <div class="booklist-items">
             {% for forum in forums %}
-                {% if not forum.is_public and not list.user.userID == request.session.userID|to_int%}
+                {% if not forum.is_public and not forum.user.userID == request.session.userID|to_int%}
                 {% else %}
                     <div class="booklist-card">
                         <!-- 右侧信息容器 -->
@@ -590,11 +590,11 @@
 
                         {% if request.session.userID|to_int == forum.user.userID %}
                             <div class="card-actions">
-                                <form method="get" action="">
+                                <form method="get" action="{% url 'forum_update' forum.id %}" onsubmit="return confirm('确认要修改动态吗？')">
                                     {% csrf_token %}
                                     <button type="submit" class="btn-edit">✏️</button>
                                 </form>
-                                <form method="get" action="" onsubmit="return confirm('确定删除该书单吗？');">
+                                <form method="get" action="{% url 'forum_delete' forum.id %}" onsubmit="return confirm('确定删除动态吗？');">
                                     {% csrf_token %}
                                     <button type="submit" class="btn-delete">🗑️</button>
                                 </form>

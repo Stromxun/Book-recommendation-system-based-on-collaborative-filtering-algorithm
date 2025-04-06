@@ -140,3 +140,19 @@ def re_unlike(request, review):
     review.zan -= 1
     review.zan = revise(review.zan)
     review.save()
+
+def forum_add_like(request, obj):
+    obj.ding += 1
+    obj.ding_user = get_id_list_from_str(obj.ding_user) + [int(request.session['userID'])]
+    obj.save()
+
+def forum_remove_like(request, obj):
+    new_ding_user = get_id_list_from_str(obj.ding_user)
+    new_ding_user.remove(int(request.session['userID']))
+    if new_ding_user:
+        obj.ding_user = new_ding_user
+    else:
+        obj.ding_user = '[]'
+    obj.ding -= 1
+    obj.ding = revise(obj.ding)
+    obj.save()

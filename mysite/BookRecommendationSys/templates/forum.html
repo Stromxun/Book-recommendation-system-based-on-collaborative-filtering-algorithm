@@ -225,6 +225,37 @@
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(0,123,255,0.3);
         }
+
+        .delete-container {
+            margin-left: auto;
+            padding-left: 15px;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .review-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+        }
     </style>
 </head>
 <body>
@@ -254,7 +285,7 @@
 <div class="post-container">
     <!-- 帖子主体 -->
     <article class="post-content">
-        <h1 class="post-title">{{ post.title }}</h1>
+        <h1 class="post-title"><a href="{% url 'forum' post.id %}" style="text-decoration: none; color: black">{{ post.title }}</a></h1>
         <div class="post-meta">
             <a href="{% url 'home' post.user.userID %}" class="author-info" style="text-decoration: none; color: black">
                 {% load static %}
@@ -272,7 +303,7 @@
         <div class="review-like">
             {% load static %}
             {% if request.session.userID %}
-                <a href=""><img src="{% static 'img/icon/heart_full.png' %}" alt="" height="20px" width="20px"></a><span class="like-count">{{ post.ding }}</span>
+                <a href="{% if post.ding_user|review_liked:request.session.userID %} {% url 'forum_unlike' post.id%} {% else %} {% url 'forum_like' post.id%} {% endif %}"><img src="{% if post.ding_user|review_liked:request.session.userID %} {% static 'img/icon/heart_full.png' %} {% else %} {% static 'img/icon/heart_empty.png' %} {% endif %}" alt="" height="20px" width="20px"></a><span class="like-count">{{ post.ding }}</span>
             {% else %}
                 <a href="{% url 'login' %}" style="text-decoration: none">登录后点赞</a>
             {% endif %}
@@ -281,9 +312,9 @@
 </div>
 <div class="reviews-section">
     <div class="reviews-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h2 style="margin: 0">评论区</h2>
+        <h2 style="margin: 0">评论区({{ reviews | length }})</h2>
         {% if request.session.userID %}
-            <a href="" style="text-decoration: none">
+            <a href="{% url 'forum_write_comment' post.id%}" style="text-decoration: none">
                 <button class="write-review-btn">✍️ 评论</button>
             </a>
         {% else %}
@@ -303,14 +334,14 @@
                             </a>
                         </span>
                         </div>
-                        <span class="review-time">{{ review.create_time|date:"Y-m-d H:i" }}</span>
+                        <span class="review-time">{{ review.addTime|date:"Y-m-d H:i" }}</span>
                     </div>
                     <div class="review-content">{{ review.content }}</div>
                     {% load custom_filters %}
                     <div class="review-like">
                         {% load static %}
                         {% if request.session.userID %}
-                            <a href="{% if review.zan_user|review_liked:request.session.userID %} {% url 'review_unlike' review.id%} {% else %} {% url 'review_like' review.id%} {% endif %}"><img src="{% if review.zan_user|review_liked:request.session.userID %} {% static 'img/icon/heart_full.png' %} {% else %} {% static 'img/icon/heart_empty.png' %} {% endif %}" alt="" height="20px" width="20px"></a><span class="like-count">{{ review.zan }}</span>
+                            <a href="{% if review.ding_user|review_liked:request.session.userID %} {% url 'comment_unlike' review.id%} {% else %} {% url 'comment_like' review.id%} {% endif %}"><img src="{% if review.ding_user|review_liked:request.session.userID %} {% static 'img/icon/heart_full.png' %} {% else %} {% static 'img/icon/heart_empty.png' %} {% endif %}" alt="" height="20px" width="20px"></a><span class="like-count">{{ review.ding }}</span>
                         {% else %}
                             <a href="{% url 'login' %}" style="text-decoration: none">登录后点赞</a>
                         {% endif %}
@@ -319,7 +350,7 @@
                         <!-- 点赞部分保持不变... -->
                         {% if request.session.userID == review.user.userID|stringformat:"s" %}
                             <div class="delete-container">
-                                <form action="{% url 'review_delete' review.id %}" method="post"
+                                <form action="{% url 'forum_delete_comment' review.id %}" method="post"
                                       onsubmit="return confirm('确定要删除这条评论吗？');">
                                     {% csrf_token %}
                                     <button type="submit" class="delete-btn">
