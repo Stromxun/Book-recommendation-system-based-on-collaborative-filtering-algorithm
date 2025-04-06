@@ -129,10 +129,12 @@ class Admin(models.Model):
 class Feedback(models.Model):
     id = models.BigAutoField(primary_key=True)
     addTime = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=120) #标题
     description = models.TextField() #内容
     user = models.ForeignKey(User, on_delete=models.CASCADE) # 发布用户
-    admin = models.ForeignKey(Admin, on_delete=models.CASCADE) # 管理员
+    admin_id = models.IntegerField(default=0) # 管理员
     replyInformation = models.TextField(blank=True) # 回复信息
+    replyTime = models.DateTimeField(default='1970-1-1') # 回复时间
     checkStatus = models.BooleanField(default=False) # 处理状态
 
 class History(models.Model):

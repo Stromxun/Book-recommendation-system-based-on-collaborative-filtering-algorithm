@@ -463,3 +463,20 @@ def comment_unlike(request, comment_id):
     comment = Comment.objects.get(id=comment_id)
     forum_remove_like(request, comment)
     return HttpResponseRedirect('/forum/{0}'.format(comment.forum.id))
+
+
+def feedbacks(request, userID):
+    user = User.objects.get(userID=userID)
+    feedbacks = Feedback.objects.filter(user=user).order_by('checkStatus').order_by('-addTime')
+    return render(request, 'feedbacks.html', {'feedbacks':feedbacks, 'user':user})
+
+
+def feedback_create(request, userID):
+    user = User.objects.get(userID=userID)
+    if request.method == "POST":
+        title = request.POST['title']
+        description = request.POST['content']
+        feedback = Feedback(user=user, title=title, description=description)
+        feedback.save()
+        return HttpResponseRedirect('/feedbacks/{0}/'.format(user.userID))
+    return render(request, 'feedback_create.html', {'goal':user})

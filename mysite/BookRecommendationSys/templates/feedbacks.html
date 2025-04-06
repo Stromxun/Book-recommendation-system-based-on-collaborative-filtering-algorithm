@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <link rel="icon" href="{% static 'img/icon/book.png' %}">
-    <title>{{ goal.name }}的书单</title>
+    <title>反馈</title>
     <style>
         /* 全局样式 */
         body {
@@ -162,9 +162,6 @@
             font-size: 14px;
             color: #777;
         }
-        .profile-details {
-            padding: 20px;
-        }
         .profile-details h3 {
             margin: 0 0 15px;
             font-size: 18px;
@@ -175,10 +172,6 @@
             font-size: 14px;
             color: #555;
             line-height: 1.5;
-        }
-        .profile-actions {
-            text-align: center;
-            padding: 15px;
         }
         .profile-actions button {
             padding: 10px 20px;
@@ -219,13 +212,6 @@
         .booklist-header h2 {
             color: #333;
             margin: 0 0 10px;
-        }
-
-        .booklist-stats {
-            color: #666;
-            font-size: 14px;
-            display: flex;
-            gap: 20px;
         }
 
         .booklist-card {
@@ -288,58 +274,6 @@
             margin-right: 20px;
         }
 
-        @media (max-width: 768px) {
-            .booklist-card {
-                padding: 15px;
-            }
-
-            .card-body {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .booklist-meta {
-                flex-wrap: wrap;
-                gap: 15px;
-            }
-
-            .booklist-actions {
-                width: 100%;
-                justify-content: flex-end;
-            }
-        }
-        .book-covers {
-            position: relative;
-            width: 120px;
-            height: 160px;
-            flex-shrink: 0;
-            margin-right: 20px;
-        }
-
-        .cover-item {
-            position: absolute;
-            width: 80px;
-            transition: transform 0.3s ease;
-        }
-
-        .cover-item:nth-child(1) {
-            left: 0;
-            z-index: 3;
-            transform: rotate(-3deg);
-        }
-
-        .cover-item:nth-child(2) {
-            left: 20px;
-            z-index: 2;
-            transform: rotate(2deg) translateY(10px);
-        }
-
-        .cover-item:nth-child(3) {
-            left: 40px;
-            z-index: 1;
-            transform: rotate(5deg) translateY(20px);
-        }
-
         .cover-item img {
             width: 100%;
             height: 120px;
@@ -361,57 +295,18 @@
             transform: translateX(15px) rotate(10deg);
         }
 
-        @media (max-width: 768px) {
-            .book-covers {
-                width: 100px;
-                height: 140px;
-                margin-right: 15px;
-            }
-
-            .cover-item img {
-                height: 100px;
-            }
-        }
-
         /* 书单卡片布局调整 */
         .booklist-card {
             display: flex;          /* 启用flex布局 */
+            flex-direction: column;
             align-items: flex-start; /* 顶部对齐 */
-            gap: 20px;              /* 元素间距 */
+            gap: 15px;              /* 元素间距 */
             padding: 20px;
         }
-
-        /* 封面容器 */
-        .book-covers {
-            flex: 0 0 160px;        /* 固定宽度 */
-            min-width: 160px;      /* 防止收缩 */
-            position: relative;
-            height: 200px;         /* 根据图片高度调整 */
-        }
-
         /* 信息容器 */
         .booklist-info {
             flex: 1;                /* 占据剩余空间 */
             min-width: 0;           /* 防止内容溢出 */
-        }
-
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            .booklist-card {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .book-covers {
-                width: 100%;
-                height: auto;
-                aspect-ratio: 3/4;
-            }
-        }
-
-        .list-switcher {
-            margin-bottom: 20px;
-            border-bottom: 2px solid #eee;
         }
 
         .list-switcher a {
@@ -432,27 +327,6 @@
 
         .list-switcher a:hover {
             background: #f5f5f5;
-        }
-
-        .btn-edit, .btn-delete {
-            background: rgba(255,255,255,0.9);
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-        }
-
-        .btn-edit:hover {
-            background: #007bff;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #dc3545;
-            color: white;
         }
         .header-title-bar {
             display: flex;
@@ -478,6 +352,118 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0,123,255,0.3);
         }
+
+        .booklist-meta {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* 空状态动画 */
+        .no-forums {
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .admin-reply {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #007bff;
+            position: relative;
+        }
+
+        .reply-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .reply-title {
+            font-weight: 600;
+            color: #007bff;
+            margin-right: 15px;
+        }
+
+        .reply-time {
+            color: #666;
+            font-size: 0.9em;
+            margin-left: auto;
+        }
+
+        .reply-content {
+            color: #444;
+            line-height: 1.6;
+            padding-left: 28px; /* 对齐图标 */
+        }
+        .reply-divider {
+            height: 1px;
+            background: #eee;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .reply-divider::before {
+            content: "⚡ 官方回复";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 0 10px;
+            color: #007bff;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* 调整管理员回复样式 */
+        .admin-reply {
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .admin-name {
+            color: #dc3545;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .admin-name:hover {
+            text-decoration: underline;
+        }
+
+        .feedback-main {
+            width: 100%;
+        }
+
+        /* 管理员回复区块 */
+        .admin-reply-section {
+            width: 100%;
+        }
+
+        /* 调整分隔线样式 */
+        .reply-divider {
+            height: 1px;
+            background: #eee;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        /* 管理员回复容器 */
+        .admin-reply {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #007bff;
+            width: 100%;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
@@ -502,88 +488,63 @@
     </div>
 </div>
 
-<!-- 侧边栏 -->
-<div class="sidebar">
-    <h3><a href="{% url 'home' goal.userID%}" style="text-decoration: none; color: #007bff">阅读空间</a></h3>
-    <ul>
-        <li><a href="{% url 'home_forum' goal.userID %}">空间动态</a></li>
-        <li><a href="{% url 'up' goal.userID%}">{% if goal.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
-        <li><a href="{% url 'home_book_list' goal.userID %}">书单</a></li>
-        {% if request.session.userID|to_int == goal.userID%} <li><a href="{% url 'home_setting' goal.userID %}">资料设置</a></li> {% endif %}
-    </ul>
-</div>
-
 <div class="main-content">
     <div class="booklist-container">
         <!-- 书单标题区 -->
         <div class="booklist-header">
-            <div class="list-switcher">
-                <a href="?type=my" class="{% if list_type == 'my' %}active{% endif %}">{% if request.session.userID|to_int == goal.userID %}我{% else %}TA{% endif %}的书单({{ my_count }})</a>
-                <a href="?type=follow" class="{% if list_type == 'follow' %}active{% endif %}">关注的书单 ({{ follow_count }})</a>
-            </div>
             <div class="header-title-bar">  <!-- 新增标题容器 -->
-                <h2>{% if list_type == 'my' %}{{ goal.name }}的书单{% else %} {{ goal.name }}关注的书单 {% endif %}</h2>
-                {% if request.session.userID|to_int == goal.userID and list_type == 'my' %}
-                    <button class="new-booklist-btn"
-                            onclick="if(confirm('确定要创建新书单吗？')){location.href='{% url 'create_bookList' %}'}">
-                        ＋ 新增书单
-                    </button>
-                {% endif %}
-            </div>
-            <div class="booklist-stats">
-                <span>共{{ book_lists|length }}个书单</span>
+                <h2> {{ user.name }}的反馈 </h2>
+                <button class="new-booklist-btn"
+                        onclick="if(confirm('确定提出新的反馈吗？')){location.href='{% url 'feedback_create' user.userID %}'}">
+                    ＋ 提出反馈
+                </button>
             </div>
         </div>
 
         <!-- 书单列表 -->
         <div class="booklist-items">
-            {% for list in book_lists %}
-                {% if not list.is_public and not list.user.userID == request.session.userID|to_int%}
-                {% else %}
-                    <div class="booklist-card">
-                        <!-- 左侧封面容器 -->
-                        <div class="book-covers">
-                            {% for img in list.bookList|get_n:3 %}
-                                <div class="cover-item" style="z-index: {{ 3|subtract:forloop.counter }};">
-                                    <img src="{{ img |default:'/static/default_cover.jpg' }}" alt="{{ book.BookTitle }}">
-                                </div>
-                            {% endfor %}
-                        </div>
-
-                        <!-- 右侧信息容器 -->
-                        <div class="booklist-info">
-                            <div class="card-header">
-                                <h3>
-                                    <a href="{% url 'booklist' list.bookListId %}" style="text-decoration: none; color: black;">{{ list.bookListTitle }}</a>
-                                    <span class="booklist-tag">{% if list.is_public %}公开{% else %}私有{% endif %}书单</span>
-                                </h3>
-                                <div class="booklist-meta">
-                                    <span class="followers">👥 {{ list.fans }}人关注</span>
-                                    <span class="update-time">🕒 {{ list.create_time|date:"Y-m-d H:i" }}发布</span>
-                                    <span class="progress">{{ list.bookList | len_book_list }}本</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="booklist-description">
-                                    {{ list.description|truncatechars:50 }}
-                                </div>
+            {% for feedback in feedbacks %}
+                <div class="booklist-card">
+                    <!-- 用户反馈内容 -->
+                    <div class="booklist-info">
+                        <div class="card-header">
+                            <h3>
+                                <a style="text-decoration: none; color: black;">{{ feedback.title }}</a>
+                                <span class="booklist-tag" style="{% if feedback.checkStatus %}color: red; {% endif %}">{% if feedback.checkStatus %}已{% else %}未{% endif %}解决</span>
+                            </h3>
+                            <div class="booklist-meta">
+                                <span class="update-time">🕒 {{ feedback.addTime|date:"Y-m-d H:i" }}发布</span>
                             </div>
                         </div>
-
-                        {% if request.session.userID|to_int == list.user.userID %}
-                            <div class="card-actions">
-                                <form method="get" action="{% url 'update_bookList' list.bookListId%}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn-edit">✏️</button>
-                                </form>
-                                <form method="get" action="{% url 'delete_bookList' list.bookListId%}" onsubmit="return confirm('确定删除该书单吗？');">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn-delete">🗑️</button>
-                                </form>
+                        <div class="card-body">
+                            <div class="booklist-description">
+                                {{ feedback.description}}
                             </div>
-                        {% endif %}
+                        </div>
                     </div>
-                {% endif %}
+
+                    <!-- 管理员回复分隔线 -->
+                    {% if feedback.checkStatus %}
+                        <div class="admin-reply-section">
+                            <div class="reply-divider"></div>
+                            <div class="admin-reply">
+                                <div class="reply-header">
+                                    <span class="reply-title">管理员
+                                        <a class="admin-name">{{ feedback.admin_id|get_admin_name }}</a> 回复
+                                    </span>
+                                    <span class="reply-time">{{ feedback.replyTime|date:"Y-m-d H:i" }}</span>
+                                </div>
+                                <div class="reply-content">
+                                    {{ feedback.replyInformation|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}  <!-- 新增空状态提示 -->
+                <div class="no-forums" style="text-align: center; padding: 40px; color: #666;">
+                    <p style="margin-top: 20px; font-size: 16px;">暂时没有反馈哦，快去<a style="color: #007bff;">提出一条反馈</a>吧！</p>
+                </div>
             {% endfor %}
         </div>
     </div>

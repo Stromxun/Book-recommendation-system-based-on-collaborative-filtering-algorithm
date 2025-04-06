@@ -50,6 +50,11 @@ urlpatterns = [
     path("forum_comment/<int:comment_id>/delete_comment/", views.forum_delete_comment, name="forum_delete_comment"),
     path("comment/<int:comment_id>/like", views.comment_like, name="comment_like"),
     path("comment/<int:comment_id>/unlike", views.comment_unlike, name="comment_unlike"),
+
+    # 反馈部分
+    path("feedbacks/<int:userID>/", views.feedbacks, name="feedbacks"),
+    path("feedbacks/<int:userID>/create/", views.feedback_create, name="feedback_create"),
+
     # 登录部分
     path('login/', views.login, name='login'),
 

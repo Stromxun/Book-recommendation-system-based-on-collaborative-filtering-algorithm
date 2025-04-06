@@ -53,3 +53,7 @@ def generate_star(score):
 def review_liked(users, userID):
     userList = get_id_list_from_str(users)
     return to_int(userID) in userList
+
+@register.filter(name='get_admin_name')
+def get_admin_name(adminID):
+    return Admin.objects.get(id=adminID).name

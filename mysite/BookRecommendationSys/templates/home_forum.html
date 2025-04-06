@@ -531,7 +531,7 @@
     <div class="nav-links">
         <a href="{% url 'index' %}">首页</a>
         <a href="{% url 'home' request.session.userID%}">我的空间</a>
-        <a href="#">反馈</a>
+        <a href="{% url 'feedbacks' request.session.userID %}">反馈</a>
         <a href="{% url 'login_out' %}">退出登录</a>
     </div>
 </div>

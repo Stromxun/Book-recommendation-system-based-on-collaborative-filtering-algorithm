@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <link rel="icon" href="{% static 'img/icon/book.png' %}">
-    <title>动态-修改</title>
+    <title>反馈-撰写</title>
     <style>
         /* 全局样式 */
         body {
@@ -295,26 +295,6 @@
                 float: none;
             }
         }
-
-        .edit-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .back-link {
-            color: #007bff;
-            text-decoration: none;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
@@ -338,38 +318,21 @@
     </div>
 </div>
 {% load custom_filters %}
-<!-- 侧边栏 -->
-<div class="sidebar">
-    <h3>阅读空间</h3>
-    <ul>
-        <li><a href="{% url 'home_forum' forum.user.userID %}">空间动态</a></li>
-        <li><a href="{% url 'up' forum.user.userID%}">{% if forum.user.userID|stringformat:"s" != request.session.userID %} TA {% else %}我{% endif %}的关注</a></li>
-        <li><a href="{% url 'home_book_list' forum.user.userID %}">书单</a></li>
-        {% if request.session.userID|to_int == forum.user.userID%} <li><a href="{% url 'home_setting' forum.user.userID %}">资料设置</a></li> {% endif %}
-    </ul>
-</div>
-
 <div class="main-content">
     <div class="form-container">
-        <div class="edit-header">
-            <h2 class="form-title">编辑动态</h2>
-            <a href="{% url 'home_forum' request.session.userID %}" class="back-link">
-                ← 返回动态详情
-            </a>
-        </div>
-
-        <form method="post" action="{% url 'forum_update' forum.id %}" onsubmit="return confirm('确认保存修改吗！')">
+        <h2 class="form-title">提出反馈</h2>
+        <form method="post" action="{% url 'feedback_create' goal.userID%}" onsubmit="return confirm('确定发送此反馈吗？')">
             {% csrf_token %}
 
             <!-- 标题输入 -->
             <div class="form-group">
-                <label class="form-label" for="title">动态标题</label>
+                <label class="form-label" for="title">反馈标题</label>
                 <input
                         type="text"
                         id="title"
                         name="title"
                         class="form-input"
-                        value="{{ forum.title }}"
+                        placeholder="请输入反馈标题（最多50字）"
                         maxlength="50"
                         required
                 >
@@ -377,49 +340,18 @@
 
             <!-- 内容输入 -->
             <div class="form-group">
-                <label class="form-label" for="content">动态内容</label>
+                <label class="form-label" for="content">反馈内容</label>
                 <textarea
                         id="content"
                         name="content"
                         class="form-input form-textarea"
+                        placeholder="请说明需要改进的地方！（最多500字）"
                         maxlength="500"
                         required
-                >{{ forum.content }}</textarea>
+                ></textarea>
             </div>
-
-            <!-- 隐私设置 -->
-            <div class="form-group">
-                <label class="form-label">可见范围</label>
-                <div class="privacy-setting">
-                    <label class="privacy-option">
-                        <input
-                                type="radio"
-                                name="privacy"
-                                value="public"
-                                {% if forum.is_public %}checked{% endif %}
-                        >
-                        <span>公开（所有人可见）</span>
-                    </label>
-                    <label class="privacy-option">
-                        <input
-                                type="radio"
-                                name="privacy"
-                                value="private"
-                                {% if not forum.is_public %}checked{% endif %}
-                        >
-                        <span>仅自己可见</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- 操作按钮组 -->
-            <div style="display: flex; justify-content: flex-end; gap: 15px;">
-                <a href="{% url 'home_forum' request.session.userID %}" class="submit-btn"
-                   style="background: #6c757d; text-decoration: none; line-height: normal;">
-                    取消
-                </a>
-                <button type="submit" class="submit-btn">保存修改</button>
-            </div>
+            <!-- 提交按钮 -->
+            <button type="submit" class="submit-btn">发送</button>
         </form>
     </div>
 </div>
