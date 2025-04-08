@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="icon" href="{% static 'img/icon/book.png' %}">
+    <title>管理员登录</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background-color: #00cc7e;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
+        }
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .navbar .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+        .navbar .nav-links a:hover {
+            text-decoration: none;
+        }
+        /* 页脚 */
+        .footer {
+            background-color: #00cc7e;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .login-container {
+            background-color: #fff;
+            padding: 20px;
+            position: absolute;
+            top: 315px;
+            bottom: 300px;
+            left: 0;
+            right: 0;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .login-container input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .login-container input[type="submit"]:hover {
+            background-color: #218838;
+        }
+        .login-container .register-link {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .login-container .register-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .login-container .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="logo" ><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书推荐系统</a></div>
+    <div class="nav-links">
+        <a href="{% url 'index' %}">返回首页</a>
+    </div>
+</div>
+<div class="login-container">
+    <h2>管理员登录</h2>
+    <form action="{% url 'admin_login' %}" method="post">
+        {% csrf_token %}
+        <input type="text" name="userID" id="userID" placeholder="账号" required value="1">
+        <input type="password" name="password" placeholder="密码" required value="123456">
+        <input type="submit" value="登录">
+    </form>
+</div>
+<!-- 页脚 -->
+<div class="footer">
+    欢迎您使用本系统，祝您拥有一个美好的阅读体验！
+</div>
+{% if userID > 0 %}
+    <script>
+        window.onload = function() {
+            document.getElementById("userID").value = {{ userID }}
+            alert('密码错误，请重新输入！')
+        };
+    </script>
+{% elif userID == -1%}
+    <script>
+        window.onload = function() {
+            alert('账户不存在，请注册账号！')
+        };
+    </script>
+{% endif %}
+</body>
+</html>

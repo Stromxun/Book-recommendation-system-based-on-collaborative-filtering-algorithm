@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="icon" href="{% static 'img/icon/book.png' %}">
+    <title>创建书籍</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        .navbar {
+            background-color: #00cc7e;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .navbar .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+
+        .form-container {
+            background-color: #fff;
+            width: 500px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #2e7d32;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 95%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #00cc7e;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 204, 126, 0.3);
+        }
+
+        .submit-btn {
+            background-color: #00cc7e;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #00b56e;
+        }
+
+        .footer {
+            background-color: #00cc7e;
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<!-- 导航栏 -->
+<nav class="navbar">
+    <div class="logo">
+        <a href="{% url 'index' %}" style="text-decoration: none; color: inherit;">图书管理系统</a>
+    </div>
+    <div class="nav-links">
+        <a href="{% url 'index' %}">返回首页</a>
+    </div>
+</nav>
+
+<!-- 表单容器 -->
+<div class="form-container">
+    <h1 class="form-header">书籍信息录入</h1>
+    <form action="{% url 'book_create' %}" method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="ISBN">ISBN编号：</label>
+            <input type="text" id="ISBN" name="ISBN" required>
+        </div>
+
+        <div class="form-group">
+            <label for="name">书籍名称：</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="author">作者信息：</label>
+            <input type="text" id="author" name="author" required>
+        </div>
+
+        <div class="form-group">
+            <label for="keyword">图书分类：</label>
+            <input type="text" id="keyword" name="keyword" placeholder="示例：科幻/文学/历史" required>
+        </div>
+        <div class="form-group">
+            <label for="description">书籍描述：</label>
+            <input type="text" id="description" name="description" required>
+        </div>
+        <div class="form-group">
+            <label for="year">出版年份：</label>
+            <input type="text" id="year" name="year" pattern="\d{4}" title="请输入4位数字年份" required>
+        </div>
+
+        <div class="form-group">
+            <label for="pub">出版社：</label>
+            <input type="text" id="pub" name="pub" required>
+        </div>
+
+        <div class="form-group">
+            <label for="image">封面链接：</label>
+            <input type="url" id="image" name="image" placeholder="https://example.com/image.jpg">
+        </div>
+
+        <div class="form-group">
+            <label for="star">初始评分：</label>
+            <input type="number" id="star" name="star" min="0" max="10" step="0.1" required>
+        </div>
+
+        <button type="submit" class="submit-btn">提交信息</button>
+    </form>
+</div>
+
+<!-- 页脚 -->
+<div class="footer">
+    欢迎您使用本系统，祝您拥有一个美好的阅读体验！
+</div>
+</body>
+</html>

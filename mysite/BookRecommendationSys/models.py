@@ -67,8 +67,8 @@ class BookListGroup(models.Model):
 # 权限
 class Token(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    tokenPublish = models.BooleanField(default=True) # 评论权限
-    tokenCommunication = models.BooleanField(default=True) # 是否被禁言
+    tokenComment = models.BooleanField(default=True) # 评论权
+    tokenPublic = models.BooleanField(default=True) # 公开数据权
     tokenLogin = models.BooleanField(default=True)  # 登录权
 
     def __str__(self):

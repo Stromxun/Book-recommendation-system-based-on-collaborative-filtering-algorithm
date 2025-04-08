@@ -57,3 +57,18 @@ def review_liked(users, userID):
 @register.filter(name='get_admin_name')
 def get_admin_name(adminID):
     return Admin.objects.get(id=adminID).name
+
+@register.filter(name='can_comment')
+def can_comment(user):
+    if not Token.objects.filter(user=user).exists():
+        token = Token(user=user)
+        token.save()
+    return Token.objects.get(user=user).tokenComment
+
+@register.filter(name='can_public')
+def can_public(user):
+    return Token.objects.get(user=user).tokenPublic
+
+@register.filter(name='can_login')
+def can_login(user):
+    return Token.objects.get(user=user).tokenLogin

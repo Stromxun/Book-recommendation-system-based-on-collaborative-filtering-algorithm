@@ -4,6 +4,10 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+from django.utils.http import urlencode
+from scripts.regsetup import description
+
 from .action import *
 from .models import *
 
@@ -361,25 +365,6 @@ def search(request, content): # 搜索
 
     return render(request, 'search.html', context)
 
-# 测试函数
-def add_data_about_book(request):
-    if request.method == "POST":
-        if not Book.objects.filter(ISBN=request.POST['ISBN']).exists():
-            ISBN = request.POST['ISBN']
-            name = request.POST['name']
-            author = request.POST['author']
-            keyword = request.POST['keyword']
-            des = request.POST['des']
-            year = request.POST['year']
-            pub = request.POST['pub']
-            image = request.POST['image']
-            star = float(request.POST['star'])
-            book = Book(ISBN, name, author, keyword, des, year, pub, image, star)
-            book.save()
-            return render(request, "test.html")
-    return render(request, "test.html")
-
-
 def forum(request, forum_id): # 帖子
     f = Forum.objects.get(id=forum_id)
     comments = Comment.objects.filter(forum=f).order_by('-ding')
@@ -480,3 +465,122 @@ def feedback_create(request, userID):
         feedback.save()
         return HttpResponseRedirect('/feedbacks/{0}/'.format(user.userID))
     return render(request, 'feedback_create.html', {'goal':user})
+
+
+def admin_login(request):
+    if request.method != 'POST' or not request.POST.get('userID'):
+        return render(request, "admin_login.html")
+    adminID = request.POST.get('userID')
+    password = request.POST.get('password')
+    if not Admin.objects.filter(pk=adminID).exists():
+        return render(request, 'admin_login.html', {'userID': -1})
+    elif password == Admin.objects.all().get(pk=adminID).pwd:
+        request.session.set_expiry(1209600) # 两周
+        request.session['adminID'] = adminID
+        return HttpResponseRedirect('/gly/{0}/manage'.format(adminID))
+    return render(request, "admin_login.html", {'userID': int(adminID)})
+
+def manage(request, adminID):
+    # 书籍管理
+    book_list = Book.objects.all().order_by('ISBN')
+    paginator = Paginator(book_list, 50)
+    page_number = request.GET.get('page')
+    books = paginator.get_page(page_number)
+
+    # 用户管理
+    users = User.objects.all()
+
+    # 反馈管理
+    feedbacks = Feedback.objects.all().order_by('checkStatus')
+
+    context = {
+        'adminID': adminID,
+        'books': books,
+        'users': users,
+        'feedbacks': feedbacks,
+    }
+    return render(request, 'admin_manage.html', context)
+
+def admin_login_out(request):
+    request.session.clear()
+    return HttpResponseRedirect('/gly/')
+
+def book_create(request):
+    if request.method == "POST":
+        if not Book.objects.filter(ISBN=request.POST['ISBN']).exists():
+            ISBN = request.POST['ISBN']
+            name = request.POST['name']
+            author = request.POST['author']
+            keyword = request.POST['keyword']
+            des = request.POST['description']
+            year = request.POST['year']
+            pub = request.POST['pub']
+            image = request.POST['image']
+            star = float(request.POST['star'])
+            book = Book(ISBN, name, author, keyword, des, year, pub, image, star)
+            book.save()
+            return HttpResponseRedirect('/gly/{0}/manage/'.format(request.session['adminID']))
+    return render(request, "admin_book_create.html")
+
+def book_delete(request, ISBN):
+    book = Book.objects.get(ISBN=ISBN)
+    book.delete()
+    return HttpResponseRedirect('/gly/{0}/manage/'.format(request.session['adminID']))
+
+
+def book_edit(request, ISBN):
+    book = Book.objects.get(ISBN=ISBN)
+    if request.method == "POST":
+        book.ISBN = request.POST['ISBN']
+        book.BookTitle = request.POST['name']
+        book.BookAuthor = request.POST['author']
+        book.keyword = request.POST['keyword']
+        book.description = request.POST['description']
+        book.YearOfPublication = request.POST['year']
+        book.Publisher = request.POST['pub']
+        book.imageURL = request.POST['image']
+        book.score = float(request.POST['star'])
+        book.save()
+        return HttpResponseRedirect('/gly/{0}/manage/'.format(request.session['adminID']))
+    return render(request, "admin_book_update.html", {'book': book})
+
+
+def update_user_status(request, userID, utype):
+    admin = Admin.objects.get(pk=request.session['adminID'])
+    # 如果没有token，创建一个新token
+    user = User.objects.get(pk=userID)
+    if not Token.objects.filter(user=user).exists():
+        token = Token(user=user)
+        token.save()
+
+    token = Token.objects.get(user=user)
+    if utype == 'comment':
+        token.tokenComment = not token.tokenComment
+    elif utype == 'public':
+        token.tokenPublic = not token.tokenPublic
+    elif utype == 'login':
+        token.tokenLogin = not token.tokenLogin
+    token.save()
+    base_url = f'/gly/{admin.id}/manage/'
+    query_params = {'q': '', 'section': 'user-permission'}
+    return HttpResponseRedirect(f"{base_url}?{urlencode(query_params)}")
+
+
+def deal_feedback(request, feedback_id):
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+
+    if request.method == 'POST':
+        # 验证管理员权限
+        if 'adminID' not in request.session:
+            return redirect('admin_login')
+
+        # 处理表单数据
+        feedback.replyInformation = request.POST.get('reply')
+        feedback.checkStatus = 'resolve_status' in request.POST
+        feedback.admin_id = request.session['adminID']
+        feedback.replyTime = timezone.now()
+        feedback.save()
+
+        return HttpResponseRedirect('/gly/{0}/manage/'.format(request.session['adminID']))
+
+    return render(request, 'admin_feedback.html', {'feedback': feedback})

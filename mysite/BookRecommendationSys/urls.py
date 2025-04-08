@@ -62,7 +62,14 @@ urlpatterns = [
     path("register/", views.register, name="register"),
     path("register_finished/", views.register_finished, name="register_finished"),
 
-    # 测试部分
-    path("test/", views.add_data_about_book, name="test"),
+    # 管理员部分
+    path("gly/",views.admin_login, name="admin_login"),
+    path("gly/<int:adminID>/manage/", views.manage, name="manage"),
+    path("gly/login_out/", views.admin_login_out, name="admin_login_out"),
+    path("gly/book_edit/<int:ISBN>", views.book_edit, name="book_edit"),
+    path("gly/book_delete/<int:ISBN>", views.book_delete, name="book_delete"),
+    path("gly/book_create/", views.book_create, name="book_create"),
+    path("gly/update_user_status/<int:userID>/<str:utype>/", views.update_user_status, name="update_user_status"),
+    path("gly/deal_feedback/<int:feedback_id>/", views.deal_feedback, name="deal_feedback"),
 
 ]

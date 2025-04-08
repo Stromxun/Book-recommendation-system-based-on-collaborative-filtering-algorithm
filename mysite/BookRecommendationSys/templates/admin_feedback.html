@@ -1,0 +1,306 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'img/icon/book.png' %}">
+    <title>反馈处理</title>
+    <style>
+        /* 继承原有样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        .navbar {
+            background-color: #00cc7e;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
+        }
+
+        .form-container {
+            background-color: #fff;
+            width: 600px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 新增反馈特定样式 */
+        .feedback-status {
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            margin-left: 15px;
+        }
+        .status-unread {
+            background-color: #ffd700;
+            color: #333;
+        }
+        .status-resolved {
+            background-color: #00cc7e;
+            color: white;
+        }
+
+        .feedback-content {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .reply-section {
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+        .info-box {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            margin-top: 5px;
+        }
+
+        textarea {
+            width: 95%;
+            height: 120px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            resize: vertical;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch .slider {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            background-color: #ccc;
+            border-radius: 12px;
+            transition: .4s;
+        }
+
+        .toggle-switch input:checked + .slider {
+            background-color: #00cc7e;
+        }
+
+        .toggle-switch .slider:before {
+            content: "";
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+        }
+
+        .toggle-switch input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .toggle-text {
+            color: #666;
+            font-size: 0.95em;
+        }
+        /* 补充缺失样式 */
+        .form-header {
+            font-size: 1.8em;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .submit-btn {
+            background-color: #00cc7e;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: auto;
+            margin-top: 15px;
+        }
+
+        .submit-btn:hover {
+            background-color: #00b56e;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .footer {
+            background-color: #00cc7e;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            font-size: 0.9em;
+        }
+
+        .form-group label {
+            font-size: 0.95em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="url"],
+        .form-group input[type="checkbox"] {
+            transition: all 0.3s ease;
+        }
+
+        .feedback-status {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .info-box {
+            word-break: break-word;
+            line-height: 1.6;
+            color: #444;
+            text-align: justify;
+        }
+
+        textarea:focus {
+            border-color: #00cc7e;
+            box-shadow: 0 0 8px rgba(0, 204, 126, 0.2);
+        }
+
+        textarea[readonly] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        /* 增强开关样式 */
+        .toggle-switch input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            user-select: none;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 640px) {
+            .form-container {
+                width: 90%;
+                margin: 80px auto;
+                padding: 20px;
+            }
+
+            .navbar {
+                padding: 8px 15px;
+            }
+
+            .form-header {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="navbar">
+    <div class="logo">
+        <a href="{% url 'index' %}" style="text-decoration: none; color: inherit;">图书管理系统</a>
+    </div>
+    <div class="nav-links">
+        <a href="{% url 'manage' request.session.adminID %}" style="text-decoration: none;color:white">返回管理</a>
+    </div>
+</nav>
+
+<!-- 反馈详情容器 -->
+<div class="form-container">
+    <h1 class="form-header">用户反馈
+        <span class="feedback-status {% if feedback.checkStatus %}status-resolved{% else %}status-unread{% endif %}">
+            {% if feedback.checkStatus %}已处理{% else %}待处理{% endif %}
+        </span>
+    </h1>
+
+    <!-- 反馈信息 -->
+    <div class="form-group">
+        <label>反馈用户：</label>
+        <div class="info-box">No.{{ feedback.user.userID }}&nbsp;{{ feedback.user.name }}</div>
+    </div>
+
+    <div class="form-group">
+        <label>反馈标题：</label>
+        <div class="info-box">{{ feedback.title }}</div>
+    </div>
+
+    <div class="form-group">
+        <label>反馈时间：</label>
+        <div class="info-box">{{ feedback.addTime|date:"Y-m-d H:i" }}</div>
+    </div>
+
+    <div class="form-group">
+        <label>反馈内容：</label>
+        <div class="feedback-content">
+            {{ feedback.description|linebreaks }}
+        </div>
+    </div>
+
+    <!-- 处理表单 -->
+    <form action="{% url 'deal_feedback' feedback.id %}" method="post" class="reply-section">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="reply">处理回复：</label>
+            <textarea id="reply" name="reply"
+                      placeholder="请输入处理意见..."
+                      {% if feedback.checkStatus %}readonly{% endif %}>{{ feedback.replyInformation }}</textarea>
+        </div>
+
+        {% if not feedback.checkStatus %}
+            <div class="form-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" name="resolve_status">
+                    <span class="slider"></span>
+                    <span class="toggle-text">标记为已解决</span>
+                </label>
+            </div>
+        {% endif %}
+
+        <button type="submit" class="submit-btn">
+            {% if feedback.checkStatus %}更新回复{% else %}提交处理{% endif %}
+        </button>
+    </form>
+</div>
+
+<!-- 页脚 -->
+<footer class="footer">
+    欢迎您使用本系统，祝您拥有一个美好的阅读体验！
+</footer>
+</body>
+</html>

@@ -1,0 +1,539 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="icon" href="{% static 'img/icon/book.png' %}">
+    <title>管理员面板 - 图书推荐系统</title>
+    <style>
+        /* 继承原有全局样式 */
+        body {
+            background-color: #f0f2f5;
+            padding-top: 60px; /* 导航栏高度补偿 */
+            padding-bottom: 40px; /* 页脚高度补偿 */
+        }
+
+        /* 管理侧边栏 */
+        .admin-sidebar {
+            width: 220px;
+            background: #fff;
+            position: fixed;
+            left: 0;
+            top: 60px;
+            bottom: 40px;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+            padding: 20px 0;
+        }
+
+        .admin-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .admin-menu li a {
+            display: block;
+            padding: 12px 25px;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .admin-menu li a:hover {
+            background: #f8f9fa;
+            border-left-color: #00cc7e;
+        }
+
+        .admin-menu li a.active {
+            background: #e8f5e9;
+            border-left-color: #00cc7e;
+            color: #2e7d32;
+        }
+
+        /* 主内容区 */
+        .admin-main {
+            margin-left: 220px;
+            padding: 25px;
+        }
+
+        /* 功能卡片 */
+        .admin-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        /* 数据表格 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        /* 操作按钮 */
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin: 0 4px;
+        }
+
+        .btn-edit {
+            background: #00cc7e;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* 搜索栏 */
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .navbar {
+            background-color: #00cc7e;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 98%;
+            z-index: 1000;
+        }
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .navbar .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+        .navbar .nav-links a:hover {
+            text-decoration: none;
+        }
+        /* 页脚 */
+        .footer {
+            background-color: #00cc7e;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .search-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        /* 搜索表单 */
+        .search-form {
+            display: flex;
+            gap: 10px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 5px;
+            transition: all 0.3s;
+        }
+
+        /* 输入框 */
+        .search-form input {
+            border: none;
+            padding: 12px 20px;
+            width: 300px;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .search-form input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #00cc7e33;
+        }
+
+        /* 搜索按钮 */
+        .btn-search {
+            background: #00cc7e;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-search:hover {
+            background: #00b56e;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,204,126,0.3);
+        }
+
+        /* 添加按钮 */
+        .btn-add {
+            background: linear-gradient(135deg, #00cc7e, #00b56e);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-add:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,204,126,0.3);
+            background: linear-gradient(135deg, #00b56e, #009f5e);
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #00cc7e;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* 表单优化 */
+        .permission-form {
+            display: inline-block;
+            margin: 0;
+        }
+
+        /* 高级设置按钮 */
+        .btn-edit {
+            background: #00cc7e;
+            padding: 8px 15px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<div class="navbar">
+    <div class="logo"><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书管理系统</a></div>
+    <div class="nav-links">
+        <a href="{% url 'admin_login_out' %}">退出管理</a>
+    </div>
+</div>
+
+<!-- 侧边栏 -->
+<div class="admin-sidebar">
+    <ul class="admin-menu">
+        <li><a href="#book-manage" class="active">📚 书籍管理</a></li>
+        <li><a href="#user-permission">👥 用户权限</a></li>
+        <li><a href="#feedback-manage">📩 反馈处理</a></li>
+    </ul>
+</div>
+
+<!-- 主内容区 -->
+<div class="admin-main">
+    <!-- 书籍管理 -->
+    <div id="book-manage" class="admin-card">
+        <div class="search-box">
+            <button class="btn-add" onclick="window.location.href='{% url 'book_create'%}'">📖 添加新书</button>
+        </div>
+
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>书名</th>
+                <th>作者</th>
+                <th>ISBN</th>
+                <th>描述</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ book.BookTitle }}</td>
+                    <td>{{ book.BookAuthor|truncatechars:10 }}</td>
+                    <td>{{ book.ISBN}}</td>
+                    <td>{{ book.description|truncatechars:10 }}</td>
+                    <td>
+                        <a href="{% url 'book_edit' book.ISBN %}" class="btn-action btn-edit">编辑</a>
+                        <form action="{% url 'book_delete' book.ISBN %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-action btn-delete">删除</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align:center;">搜索不到书籍数据</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% if books.paginator.num_pages > 1 %}
+            <div class="pagination">
+                <span class="step-links">
+                    {% if books.has_previous %}
+                        <a href="?page=1">&laquo; 首页</a>
+                        <a href="?page={{ books.previous_page_number }}">上一页</a>
+                    {% endif %}
+
+                    <span class="current">
+                        第 {{ books.number }} 页 / 共 {{ books.paginator.num_pages }} 页
+                    </span>
+
+                    {% if books.has_next %}
+                        <a href="?page={{ books.next_page_number }}">下一页</a>
+                        <a href="?page={{ books.paginator.num_pages }}">末页 &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- 用户权限 -->
+    <div id="user-permission" class="admin-card" style="display:none;">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>用户ID</th>
+                <th>用户名</th>
+                <th>评论权</th>
+                <th>公开数据权</th>
+                <th>登录权</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.userID }}</td>
+                    <td>{{ user.name }}</td>
+                    {% load custom_filters %}
+                    <!-- 评论权 -->
+                    <td>
+                        <form action="{% url 'update_user_status' user.userID 'comment'%}" method="post" class="permission-form">
+                            {% csrf_token %}
+                            <label class="switch">
+                                <input type="checkbox" name="can_comment"
+                                       {% if user|can_comment %}checked{% endif %}
+                                       onchange="this.form.submit()">
+                                <span class="slider"></span>
+                            </label>
+                        </form>
+                    </td>
+
+                    <!-- 公开数据权 -->
+                    <td>
+                        <form action="{% url 'update_user_status' user.userID 'public'%}" method="post" class="permission-form">
+                            {% csrf_token %}
+                            <label class="switch">
+                                <input type="checkbox" name="can_share"
+                                       {% if user|can_public %}checked{% endif %}
+                                       onchange="this.form.submit()">
+                                <span class="slider"></span>
+                            </label>
+                        </form>
+                    </td>
+
+                    <!-- 登录权 -->
+                    <td>
+                        <form action="{% url 'update_user_status' user.userID 'login'%}" method="post" class="permission-form">
+                            {% csrf_token %}
+                            <label class="switch">
+                                <input type="checkbox" name="can_login"
+                                       {% if user|can_login %}checked{% endif %}
+                                       onchange="this.form.submit()">
+                                <span class="slider"></span>
+                            </label>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align:center;">没有搜索到数据</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 反馈处理 -->
+    <div id="feedback-manage" class="admin-card" style="display:none;">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>反馈时间</th>
+                <th>用户</th>
+                <th>主题</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for feedback in feedbacks %}
+                <tr>
+                    <td>{{ feedback.addTime|date:"Y-m-d H:i" }}</td>
+                    <td>{{ feedback.user.name }}</td>
+                    <td>{{ feedback.title|truncatechars:10 }}</td>
+                    <td>
+                            <span style="color:{% if feedback.checkStatus %}#00cc7e{% else %}#dc3545{% endif %};">
+                                {% if feedback.checkStatus %}已处理{% else %}未处理{% endif %}
+                            </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'deal_feedback' feedback.id %}" class="btn-action btn-edit">{% if feedback.checkStatus %}查看{% else %}处理{% endif %}</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align:center;">暂无未处理的反馈</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 页脚 -->
+<div class="footer">
+    欢迎您使用本系统，祝您拥有一个美好的阅读体验！
+</div>
+
+<script>
+    // 切换功能模块
+    document.querySelectorAll('.admin-menu a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            // 切换激活状态
+            document.querySelectorAll('.admin-menu a').forEach(a => a.classList.remove('active'));
+            e.target.classList.add('active');
+
+            // 显示对应内容
+            const target = e.target.getAttribute('href');
+            document.querySelectorAll('.admin-card').forEach(card => {
+                card.style.display = card.id === target.substring(1) ? 'block' : 'none';
+            });
+        });
+    });
+
+    document.querySelectorAll('.permission-form input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // 显示保存状态
+            const spinner = document.createElement('div');
+            spinner.className = 'save-spinner';
+            this.parentElement.appendChild(spinner);
+
+            // 提交表单
+            this.form.submit();
+        });
+    });
+
+    // 高级设置弹窗
+    function showAdvancedSettings(userId) {
+        // 实现弹出详细设置窗口的逻辑
+        console.log('打开用户ID为', userId, '的高级设置');
+    }
+</script>
+</body>
+</html>
