@@ -478,7 +478,11 @@
     <div class="reviews-header">
         <h2>{{ book.BookTitle }}的书评</h2>
         {% if request.session.userID %}
-            <a href="{% url 'review_write' book.ISBN%}" style="text-decoration: none"><button class="write-review-btn">✍️ 写书评</button></a>
+            {% if request.session.userID|can_comment %}
+                <a href="{% url 'review_write' book.ISBN%}" style="text-decoration: none"><button class="write-review-btn">✍️ 写书评</button></a>
+            {% else %}
+                <a style="text-decoration: none"><button class="write-review-btn">您已被禁止发表评论</button></a>
+            {% endif %}
         {% else %}
             <a href="{% url 'login' %}" class="write-review-btn">🔑 登录后评论</a>
         {% endif %}

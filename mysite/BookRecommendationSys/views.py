@@ -1,20 +1,29 @@
 import datetime
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Case, When
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.utils.http import urlencode
-from scripts.regsetup import description
+from django.db.models import F, Value, FloatField
+from django.db.models.functions import Greatest
 
 from .action import *
 from .models import *
+from .recommend import *
 
 
 def index(request): # 优化处
     # 获取所有书籍并按id排序
-    book_list, favorites = init_recommend(request)
+    book_list, favorites = [], []
+    ID = request.session.get('ID')
+    if request.session.get('userID'):
+        book_list = generate_recommend(request.session.get('userID'))
+    else:
+        book_list = init_recommend()
+    if ID and Favorites.objects.filter(user_id=ID).exists():
+        favorites = get_id_list_from_str(Favorites.objects.get(user_id=ID).bookList)
     # 每页显示50本
     paginator = Paginator(book_list, 50)
     page_number = request.GET.get('page')
@@ -29,6 +38,8 @@ def login(request):
     if not User.objects.filter(userID=userID).exists():
         return render(request, 'login.html', {'userID': -1})
     elif password == User.objects.all().get(userID=userID).pwd:
+        if not Token.objects.get(user=userID).tokenLogin:
+            return render(request, 'login.html', {'userID': -2})
         request.session.set_expiry(1209600) # 两周
         request.session['userID'] = userID
         return HttpResponseRedirect('/{0}/home/'.format(userID))
@@ -60,13 +71,15 @@ def register(request):
         generate_group(user)
         generate_favorite(user)
         generate_book_list_group(user)
+        generate_user_history(user)
+        generate_token(user)
         return register_finished(request, {'user' : user})
     return render(request, "register.html")
 
 def book(request, ISBN):
     book = Book.objects.all().get(ISBN=ISBN)
-
     userID = request.session.get('userID')
+    update_book_history(userID, ISBN)
     # 书评
     top_reviews = Review.objects.filter(book=book).order_by('-star')
     if not userID:
@@ -109,7 +122,7 @@ def review_delete(request, review_id):
 def booklist(request, bookListId):
     bookList = BookList.objects.get(bookListId=bookListId)
     user = User.objects.get(userID=request.session.get('userID'))
-    booklist_group = BookListGroup.objects.get(user=user)
+    booklist_group = FollowBookListGroup.objects.get(user=user)
     group = get_id_list_from_str(booklist_group.book_list)
     return render(request, 'booklist.html', {'booklist': bookList, 'is_following' : (int(bookListId) in group)})
 
@@ -220,7 +233,7 @@ def home_book_list(request, goal_id):
 
     try:
         # 处理可能不存在的关注组
-        follow_group = BookListGroup.objects.get(user=user).book_list
+        follow_group = FollowBookListGroup.objects.get(user=user).book_list
         list_ids = get_id_list_from_str(follow_group)
 
         # 优化查询：使用Q对象组合条件
@@ -228,7 +241,7 @@ def home_book_list(request, goal_id):
             Q(bookListId__in=list_ids)
         ).select_related('user')
 
-    except BookListGroup.DoesNotExist:
+    except FollowBookListGroup.DoesNotExist:
         pass
 
     # 根据类型选择数据
@@ -325,12 +338,35 @@ def search(request, content): # 搜索
 
     # 查询逻辑
     if search_type == 'book':
-        query = Q(BookTitle__icontains=content) | Q(BookAuthor__icontains=content)
+        query = (
+                Q(BookTitle__icontains=content) |
+                Q(description__icontains=content)
+        )
+        update_search_history(request.session.get('userID'), content)
         try:
             query |= Q(ISBN=int(content))
         except ValueError:
             pass
-        results = Book.objects.filter(query)
+        results = Book.objects.filter(query).order_by('score').annotate(
+            # 计算匹配相关度（示例算法）
+            relevance=Greatest(
+                # 标题匹配权重0.8
+                Case(
+                    When(BookTitle__icontains=content, then=Value(0.8)),
+                    default=Value(0.0),
+                    output_field=FloatField()
+                ),
+                # 描述匹配权重0.5
+                Case(
+                    When(description__icontains=content, then=Value(0.5)),
+                    default=Value(0.0),
+                    output_field=FloatField()
+                )
+            )
+        ).order_by(
+            '-score',  # 第一排序条件：评分降序
+            '-relevance'  # 第二排序条件：相关度降序
+        )
 
     elif search_type == 'booklist':
         query = Q(bookListTitle__icontains=content) | Q(description__icontains=content)
@@ -338,7 +374,26 @@ def search(request, content): # 搜索
             query |= Q(bookListId=int(content))
         except ValueError:
             pass
-        results = BookList.objects.filter(query)
+        results = BookList.objects.filter(query).annotate(
+            # 计算匹配相关度（示例算法）
+            relevance=Greatest(
+                # 标题匹配权重0.8
+                Case(
+                    When(bookListTitle__icontains=content, then=Value(0.8)),
+                    default=Value(0.0),
+                    output_field=FloatField()
+                ),
+                # 描述匹配权重0.5
+                Case(
+                    When(description__icontains=content, then=Value(0.5)),
+                    default=Value(0.0),
+                    output_field=FloatField()
+                )
+            )
+        ).order_by(
+            '-fans',  # 第一排序条件：评分降序
+            '-relevance'  # 第二排序条件：相关度降序
+        )
 
     else:  # user
         query = Q(name__icontains=content)
@@ -346,7 +401,7 @@ def search(request, content): # 搜索
             query |= Q(userID=int(content))
         except ValueError:
             pass
-        results = User.objects.filter(query)
+        results = User.objects.filter(query).order_by('userID')
 
     # 分页处理
     paginator = Paginator(results, per_page)

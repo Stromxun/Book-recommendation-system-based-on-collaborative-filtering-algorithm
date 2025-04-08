@@ -314,9 +314,13 @@
     <div class="reviews-header" style="display: flex; justify-content: space-between; align-items: center;">
         <h2 style="margin: 0">评论区({{ reviews | length }})</h2>
         {% if request.session.userID %}
-            <a href="{% url 'forum_write_comment' post.id%}" style="text-decoration: none">
-                <button class="write-review-btn">✍️ 评论</button>
-            </a>
+            {% if request.session.userID|to_int == post.user.userID or request.session.userID|can_comment %}
+                <a href="{% url 'forum_write_comment' post.id%}" style="text-decoration: none">
+                    <button class="write-review-btn">✍️ 评论</button>
+                </a>
+            {% else %}
+                <a style="text-decoration: none"><button class="write-review-btn">您已被禁止发表评论</button></a>
+            {% endif %}
         {% else %}
             <a href="{% url 'login' %}" class="write-review-btn">🔑 登录后评论</a>
         {% endif %}

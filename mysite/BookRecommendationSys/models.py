@@ -59,7 +59,7 @@ class BookList(models.Model): # 书单模型
     def __str__(self):
         return self.bookListId
 
-class BookListGroup(models.Model):
+class FollowBookListGroup(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE) # 用户
     book_list = models.TextField(blank=True) # '[]' 存储bookListId
@@ -140,5 +140,5 @@ class Feedback(models.Model):
 class History(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    search_history = models.CharField(max_length=120, default='[]') # '[]' 存储搜索历史, 使用最近时间的5个条目
+    search_history = models.CharField(max_length=1000, default='[]') # '[]' 存储搜索历史, 使用最近时间的10个条目
     book_history = models.CharField(max_length=250, default='[]') # '[]' 存储访问书籍历史，使用最近时间的10个条目

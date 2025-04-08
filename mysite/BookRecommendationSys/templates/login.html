@@ -143,6 +143,12 @@
             alert('账户不存在，请注册账号！')
         };
     </script>
+{% elif userID == -2 %} {
+    <script>
+    window.onload = function() {
+            alert('您的账号已被封禁！请联系管理员进行处理！')
+        };
+    </script>
 {% endif %}
 </body>
 </html>

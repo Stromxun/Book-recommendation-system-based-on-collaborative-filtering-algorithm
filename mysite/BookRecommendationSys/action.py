@@ -1,16 +1,14 @@
+from django.http import request
+
 from .models import *
 
 def revise(obj):
     return 0 if obj < 0 else obj
 
 
-def init_recommend(request):
-    ID = request.session.get('userID')
+def init_recommend():
     books = Book.objects.all().order_by('-score')[:50]  # 降序排列取前50
-    favorites = []
-    if ID and Favorites.objects.filter(user_id=ID).exists():
-        favorites = get_id_list_from_str(Favorites.objects.get(user_id=ID).bookList)
-    return [books, favorites]
+    return books
 
 def generate_group(user): # 生成初始group
     group = Group(user=user, ups='[]')
@@ -21,7 +19,7 @@ def generate_favorite(user):
     favorite.save()
 
 def generate_book_list_group(user):
-    book_list_group = BookListGroup(user=user, book_list='[]')
+    book_list_group = FollowBookListGroup(user=user, book_list='[]')
     book_list_group.save()
 
 # 算是一种对数据库中存储字符串的解释
@@ -85,7 +83,7 @@ def delete_like(request, ISBN):
     favorites.save()
 
 def get_book_list_group(request):
-    return BookListGroup.objects.get(user=User.objects.get(userID=request.session['userID']))
+    return FollowBookListGroup.objects.get(user=User.objects.get(userID=request.session['userID']))
 
 def add_book_list_follow(request, bookListId):
     book_list_group = get_book_list_group(request)
@@ -156,3 +154,33 @@ def forum_remove_like(request, obj):
     obj.ding -= 1
     obj.ding = revise(obj.ding)
     obj.save()
+
+def generate_user_history(user):
+    history = History(user=user)
+    history.save()
+
+def update_search_history(userID, content):
+    user = User.objects.get(userID=userID)
+    history = History.objects.get(user=user)
+    new_history = get_id_list_from_str(history.search_history) + [content]
+    length = len(new_history)
+    index = 0
+    if length > 10:
+        index = 1
+    history.search_history = new_history[index :length]
+    history.save()
+
+def update_book_history(userID, ISBN):
+    user = User.objects.get(userID=userID)
+    history = History.objects.get(user=user)
+    new_history = get_id_list_from_str(history.book_history) + [ISBN]
+    length = len(new_history)
+    index = 0
+    if length > 10:
+        index = 1
+    history.book_history = new_history[index:length]
+    history.save()
+
+def generate_token(user):
+    token = Token(user=user)
+    token.save()
