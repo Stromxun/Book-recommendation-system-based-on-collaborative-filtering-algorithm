@@ -277,7 +277,6 @@
         <!-- 操作按钮：发消息、加好友 -->
         {% if goal.userID|stringformat:"s" != request.session.userID %}
             <div class="profile-actions">
-                <button>私信</button>
                 {% if followed %}
                     <button onclick="if(confirm('确定取消关注吗？')){location.href='{% url 'unfollow' goal.userID %}'}">取消关注</button>
                 {% else %}

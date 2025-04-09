@@ -640,10 +640,10 @@
                             </div>
                             <div class="book-meta">
                             <span class="authors">
-                                作者：{{ book.BookAuthor }}
+                                作者：{{ book.BookAuthor|truncatechars:10 }}
                             </span>
-                                <span class="publisher">出版社：{{ book.Publisher }}</span>
-                                <span class="publish-year">出版年：{{ book.YearOfPublication }}</span>
+                                <span class="publisher">出版社：{{ book.Publisher|truncatechars:10 }}</span>
+                                <span class="publish-year">出版年：{{ book.YearOfPublication|truncatechars:10 }}</span>
                             </div>
                         </div>
                     </div>

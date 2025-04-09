@@ -42,7 +42,7 @@ def login(request):
             return render(request, 'login.html', {'userID': -2})
         request.session.set_expiry(1209600) # 两周
         request.session['userID'] = userID
-        return HttpResponseRedirect('/{0}/home/'.format(userID))
+        return HttpResponseRedirect('/index/')
     return render(request, "login.html", {'userID': int(userID)})
 
 

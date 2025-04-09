@@ -316,7 +316,7 @@
 <body>
 <!-- 导航栏 -->
 <div class="navbar">
-    <div class="logo"><a href="{% url "index" %}" style="text-decoration: none; color: inherit;">图书管理系统</a></div>
+    <div class="logo"><a href="{% url "manage" request.session.adminID%}" style="text-decoration: none; color: inherit;">图书管理系统</a></div>
     <div class="nav-links">
         <a href="{% url 'admin_login_out' %}">退出管理</a>
     </div>
