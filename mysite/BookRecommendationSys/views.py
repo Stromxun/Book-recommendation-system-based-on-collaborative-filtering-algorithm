@@ -78,8 +78,10 @@ def register(request):
 
 def book(request, ISBN):
     book = Book.objects.all().get(ISBN=ISBN)
-    userID = request.session.get('userID')
-    update_book_history(userID, ISBN)
+    userID = None
+    if request.session.get('userID'):
+        userID = request.session.get('userID')
+        update_book_history(userID, ISBN)
     # 书评
     top_reviews = Review.objects.filter(book=book).order_by('-star')
     if not userID:
@@ -342,7 +344,8 @@ def search(request, content): # 搜索
                 Q(BookTitle__icontains=content) |
                 Q(description__icontains=content)
         )
-        update_search_history(request.session.get('userID'), content)
+        if request.session.get('userID'):
+            update_search_history(request.session.get('userID'), content)
         try:
             query |= Q(ISBN=int(content))
         except ValueError:

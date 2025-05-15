@@ -1,3 +1,4 @@
+import ast
 from django.http import request
 
 from .models import *
@@ -36,6 +37,8 @@ def get_id_list_from_str(group_list): # 输出字符串列表中的所有id
         elif '0' <= c <= '9':
             group_id = 10 * group_id + int(c)
     return group_id_list
+
+
 
 def all_friends(request, user): # 输出所有好友id
     ups = Group.objects.get(user=user).ups
@@ -155,6 +158,9 @@ def forum_remove_like(request, obj):
     obj.ding = revise(obj.ding)
     obj.save()
 
+def convert_str_to_list(s):
+    return ast.literal_eval(s)
+
 def generate_user_history(user):
     history = History(user=user)
     history.save()
@@ -162,7 +168,7 @@ def generate_user_history(user):
 def update_search_history(userID, content):
     user = User.objects.get(userID=userID)
     history = History.objects.get(user=user)
-    new_history = get_id_list_from_str(history.search_history) + [content]
+    new_history = convert_str_to_list(history.search_history) + [content]
     length = len(new_history)
     index = 0
     if length > 10:
